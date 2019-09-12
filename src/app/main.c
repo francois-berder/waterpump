@@ -17,17 +17,39 @@
  * along with waterpump.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "app/board.h"
 #include "mcu/gpio.h"
+#include "mcu/stm32l051xx.h"
 
-#define ENABLE_GSM_PIN      (GPIO_PIN(PORT_B, 7))
-#define ENABLE_PUMP1_PIN    (GPIO_PIN(PORT_B, 6))
-#define ENABLE_PUMP2_PIN    (GPIO_PIN(PORT_B, 5))
-#define LED_PIN             (GPIO_PIN(PORT_A, 7))
-#define REQ_WATER_PIN       (GPIO_PIN(PORT_A, 5))
+static void init_clocks(void)
+{
+    /* Enable HSI clock */
+    RCC->CR |= RCC_CR_HSION;
+    while (!(RCC->CR & RCC_CR_HSIRDY));
+
+    /* Configure AHB, APB1, APB2 clocks */
+    RCC->CFGR = (RCC_CFGR_SW_HSI | RCC_CFGR_HPRE_DIV1 |
+                 RCC_CFGR_PPRE1_DIV1 | RCC_CFGR_PPRE2_DIV1);
+    while ((RCC->CFGR & RCC_CFGR_SWS) != RCC_CFGR_SWS_HSI);
+
+    /* Enable LSI clock (for RTC) */
+    RCC->CSR |= RCC_CSR_LSION;
+    while (!(RCC->CSR & RCC_CSR_LSIRDY));
+
+    /* Clock RTC using LSI */
+    RCC->CSR &= ~RCC_CSR_RTCSEL;
+    RCC->CSR |= 0x2 << RCC_CSR_RTCSEL_Pos;
+
+    /* Disable write protection for RTC module */
+    PWR->CR |= PWR_CR_DBP;
+}
+#include "mcu/rtc.h"
 
 int main(void)
 {
-    /* 1. Initialize GPIOs */
+    init_clocks();
+
+    /* Initialize GPIOs */
     gpio_init_out(LED_PIN, 1);
     gpio_init_out(ENABLE_GSM_PIN, 0);
     gpio_init_out(ENABLE_PUMP1_PIN, 0);
