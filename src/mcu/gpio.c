@@ -195,13 +195,6 @@ void gpio_init_int(uint8_t gpio, enum pull_mode_t mode, enum gpio_flank_t flank)
 
     gpio_init_in(gpio, mode);
 
-    if (index < 2)
-        NVIC_EnableIRQ(EXTI0_1_IRQn);
-    else if (index < 4)
-        NVIC_EnableIRQ(EXTI2_3_IRQn);
-    else
-        NVIC_EnableIRQ(EXTI4_15_IRQn);
-
     EXTI->RTSR &= ~(0x1U << index);
     EXTI->RTSR |= (flank & 0x1U) << index;
     EXTI->FTSR &= ~(0x1U << index);
