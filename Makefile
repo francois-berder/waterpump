@@ -1,13 +1,13 @@
 CC := arm-none-eabi-gcc
 CP := arm-none-eabi-objcopy
 
-CONFIG ?= release
+BUILDTYPE ?= release
 
 BUILDDIR := build
 
-OBJDIR := $(BUILDDIR)/$(CONFIG)/obj
-DEPDIR := $(BUILDDIR)/$(CONFIG)/dep
-BINDIR := $(BUILDDIR)/$(CONFIG)/bin
+OBJDIR := $(BUILDDIR)/$(BUILDTYPE)/obj
+DEPDIR := $(BUILDDIR)/$(BUILDTYPE)/dep
+BINDIR := $(BUILDDIR)/$(BUILDTYPE)/bin
 
 CFLAGS += -mcpu=cortex-m0plus -mthumb -mthumb-interwork -mlittle-endian -mfloat-abi=soft
 LDFLAGS += -mcpu=cortex-m0plus -mthumb -mthumb-interwork -mlittle-endian -mfloat-abi=soft
@@ -22,10 +22,10 @@ LDFLAGS += -Wl,-Map=$(BINDIR)/$(TARGET).map
 LDFLAGS += -specs=nosys.specs
 LDFLAGS += -L ldscripts -T stm32l051xx.ld
 
-ifeq ($(CONFIG),release)
+ifeq ($(BUILDTYPE),release)
 CFLAGS += -O2 -fno-delete-null-pointer-checks
 LDFLAGS += -O2 -fno-delete-null-pointer-checks
-else ifeq ($(CONFIG),debug)
+else ifeq ($(BUILDTYPE),debug)
 CFLAGS += -ggdb -g3 -gz
 LDFLAGS += -ggdb -g3 -gz
 endif
@@ -34,7 +34,7 @@ SRCS := src/app/main.c src/mcu/gpio.c src/mcu/rtc.c src/mcu/startup.c
 OBJS := $(SRCS:%.c=$(OBJDIR)/%.o)
 DEPS := $(SRCS:%.c=$(DEPDIR)/%.d)
 
-TARGET := waterpump-$(CONFIG)
+TARGET := waterpump-$(BUILDTYPE)
 
 .PHONY: all
 all: $(BINDIR)/$(TARGET).hex
@@ -53,7 +53,7 @@ $(OBJDIR)/%.o: %.c
 
 .PHONY: clean
 clean:
-	rm -rf $(BUILDDIR)/$(CONFIG)
+	rm -rf $(BUILDDIR)/$(BUILDTYPE)
 
 .PHONY: distclean
 distclean:
