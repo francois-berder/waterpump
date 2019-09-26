@@ -17,22 +17,12 @@
  * along with waterpump.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef BOARD_H
-#define BOARD_H
+#ifndef PUMPS_H
+#define PUMPS_H
 
-#include "mcu/gpio.h"
-
-#define ENABLE_GSM_PIN      (GPIO_PIN(PORT_B, 7))
-#define ENABLE_PUMP1_PIN    (GPIO_PIN(PORT_B, 6))
-#define ENABLE_PUMP2_PIN    (GPIO_PIN(PORT_B, 5))
-#define LED_PIN             (GPIO_PIN(PORT_A, 7))
-#define REQ_WATER_PIN       (GPIO_PIN(PORT_A, 5))
-
-#define CORE_CLOCK          (16000000)
-#define CLOCK_APB1          (16000000)
-#define CLOCK_APB2          (16000000)
-#define CLOCK_LSI           (38000)
-
-#define MCU_TIM2_EN
+/**
+ * @brief Switch on pumps for 5 seconds
+ */
+void pumps_start(void);
 
 #endif

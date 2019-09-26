@@ -18,13 +18,14 @@
  */
 
 #include "app/board.h"
+#include "app/pumps.h"
 #include "mcu/gpio.h"
 #include "mcu/stm32l051xx.h"
 
 /* push button req water callback */
 void ext5_callback(void)
 {
-    /* @todo Handle req water */
+    pumps_start();
 }
 
 static void init_clocks(void)
@@ -63,6 +64,7 @@ int main(void)
 
     /* Configure NVIC and enable interrupts */
     NVIC_EnableIRQ(EXTI4_15_IRQn);
+    NVIC_EnableIRQ(TIM2_IRQn);
     __enable_irq();
 
     while (1);
