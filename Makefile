@@ -20,6 +20,7 @@ DEPFLAGS = -MMD -MP -MF $(@:$(OBJDIR)/%.o=$(DEPDIR)/%.d)
 LDFLAGS += -Wl,--gc-sections
 LDFLAGS += -Wl,-Map=$(BINDIR)/$(TARGET).map
 LDFLAGS += -specs=nosys.specs
+LDFLAGS += -nostartfiles
 LDFLAGS += -L ldscripts -T stm32l051xx.ld
 
 ifeq ($(BUILDTYPE),release)
