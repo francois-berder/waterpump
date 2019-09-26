@@ -21,6 +21,12 @@
 #include "mcu/gpio.h"
 #include "mcu/stm32l051xx.h"
 
+/* push button req water callback */
+void ext5_callback(void)
+{
+    /* @todo Handle req water */
+}
+
 static void init_clocks(void)
 {
     /* Enable HSI clock */
@@ -43,7 +49,6 @@ static void init_clocks(void)
     /* Disable write protection for RTC module */
     PWR->CR |= PWR_CR_DBP;
 }
-#include "mcu/rtc.h"
 
 int main(void)
 {
@@ -55,6 +60,10 @@ int main(void)
     gpio_init_out(ENABLE_PUMP1_PIN, 0);
     gpio_init_out(ENABLE_PUMP2_PIN, 0);
     gpio_init_int(REQ_WATER_PIN, PULL_NONE, GPIO_FALLING);
+
+    /* Configure NVIC and enable interrupts */
+    NVIC_EnableIRQ(EXTI4_15_IRQn);
+    __enable_irq();
 
     while (1);
 
