@@ -103,7 +103,7 @@ void gpio_init_out(uint8_t gpio, int val)
     uint32_t index = GPIO_IDX(gpio);
     GPIO_TypeDef * const regs = base_address[port];
 
-    RCC->AHBENR |= RCC_IOPENR_GPIOAEN << port;
+    RCC->IOPENR |= RCC_IOPENR_GPIOAEN << port;
 
     configure_pull_up_down(regs, index, PULL_NONE);
     if (val)
@@ -123,7 +123,7 @@ void gpio_init_od(uint8_t gpio, enum pull_mode_t mode, int val)
     uint32_t index = GPIO_IDX(gpio);
     GPIO_TypeDef * const regs = base_address[port];
 
-    RCC->AHBENR |= RCC_IOPENR_GPIOAEN << port;
+    RCC->IOPENR |= RCC_IOPENR_GPIOAEN << port;
 
     configure_pull_up_down(regs, index, mode);
     if (val)
@@ -144,7 +144,7 @@ void gpio_init_in(uint8_t gpio, enum pull_mode_t mode)
     uint32_t index = GPIO_IDX(gpio);
     GPIO_TypeDef * const regs = base_address[port];
 
-    RCC->AHBENR |= RCC_IOPENR_GPIOAEN << port;
+    RCC->IOPENR |= RCC_IOPENR_GPIOAEN << port;
 
     configure_pull_up_down(regs, index, mode);
 
@@ -157,7 +157,7 @@ void gpio_init_af(uint8_t gpio, uint8_t function)
     uint32_t index = GPIO_IDX(gpio);
     GPIO_TypeDef * const regs = base_address[port];
 
-    RCC->AHBENR |= RCC_IOPENR_GPIOAEN << port;
+    RCC->IOPENR |= RCC_IOPENR_GPIOAEN << port;
 
     function &= 0xF;
     if (index < 8) {
@@ -181,7 +181,7 @@ void gpio_init_analog(uint8_t gpio)
     uint32_t index = GPIO_IDX(gpio);
     GPIO_TypeDef * const regs = base_address[port];
 
-    RCC->AHBENR |= RCC_IOPENR_GPIOAEN << port;
+    RCC->IOPENR |= RCC_IOPENR_GPIOAEN << port;
 
     regs->MODER |= 0x3U << (2 * index);
 }
@@ -213,7 +213,7 @@ void gpio_write(uint8_t gpio, int val)
     uint32_t index = GPIO_IDX(gpio);
     GPIO_TypeDef * const regs = base_address[port];
 
-    RCC->AHBENR |= RCC_IOPENR_GPIOAEN << port;
+    RCC->IOPENR |= RCC_IOPENR_GPIOAEN << port;
 
     if (val)
         regs->BSRR |= 1U << index;
@@ -227,7 +227,7 @@ void gpio_toggle(uint8_t gpio)
     uint32_t index = GPIO_IDX(gpio);
     GPIO_TypeDef * const regs = base_address[port];
 
-    RCC->AHBENR |= RCC_IOPENR_GPIOAEN << port;
+    RCC->IOPENR |= RCC_IOPENR_GPIOAEN << port;
 
     regs->ODR ^= 1U << index;
 }
@@ -238,7 +238,7 @@ int gpio_read(uint8_t gpio)
     uint32_t index = GPIO_IDX(gpio);
     GPIO_TypeDef * const regs = base_address[port];
 
-    RCC->AHBENR |= RCC_IOPENR_GPIOAEN << port;
+    RCC->IOPENR |= RCC_IOPENR_GPIOAEN << port;
 
     return !!(regs->IDR & (1U << index));
 }
