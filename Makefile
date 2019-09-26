@@ -31,6 +31,8 @@ CFLAGS += -ggdb -g3 -gz
 LDFLAGS += -ggdb -g3 -gz
 endif
 
+JLINK_DEVICE := STM32L051K6
+
 SRCS := src/app/main.c src/mcu/gpio.c src/mcu/rtc.c src/mcu/startup.c
 OBJS := $(SRCS:%.c=$(OBJDIR)/%.o)
 DEPS := $(SRCS:%.c=$(DEPDIR)/%.d)
