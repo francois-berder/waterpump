@@ -67,7 +67,8 @@ int main(void)
     NVIC_EnableIRQ(TIM2_IRQn);
     __enable_irq();
 
-    while (1);
+    while (1)
+        __asm__ volatile ("wfi" ::: "memory");
 
     __builtin_unreachable();
 }
