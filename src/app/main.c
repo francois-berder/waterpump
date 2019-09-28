@@ -61,6 +61,10 @@ int main(void)
     gpio_init_out(ENABLE_PUMP1_PIN, 0);
     gpio_init_out(ENABLE_PUMP2_PIN, 0);
     gpio_init_int(REQ_WATER_PIN, PULL_NONE, GPIO_FALLING);
+    gpio_init_out(GSM_TX_PIN, 1);
+    gpio_init_in(GSM_RX_PIN, PULL_UP);
+    gpio_init_af(GSM_TX_PIN, 4);
+    gpio_init_af(GSM_RX_PIN, 4);
 
     /* Configure NVIC and enable interrupts */
     NVIC_EnableIRQ(EXTI4_15_IRQn);

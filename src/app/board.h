@@ -27,6 +27,8 @@
 #define ENABLE_PUMP2_PIN    (GPIO_PIN(PORT_B, 5))
 #define LED_PIN             (GPIO_PIN(PORT_A, 7))
 #define REQ_WATER_PIN       (GPIO_PIN(PORT_A, 5))
+#define GSM_TX_PIN          (GPIO_PIN(PORT_A, 2))
+#define GSM_RX_PIN          (GPIO_PIN(PORT_A, 3))
 
 #define CORE_CLOCK          (16000000)
 #define CLOCK_APB1          (16000000)
