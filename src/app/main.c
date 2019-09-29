@@ -20,6 +20,7 @@
 #include "app/board.h"
 #include "app/pumps.h"
 #include "mcu/gpio.h"
+#include "mcu/mcu.h"
 #include "mcu/stm32l051xx.h"
 
 /* push button req water callback */
