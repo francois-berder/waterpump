@@ -95,4 +95,15 @@ void uart_send(USART_TypeDef *dev, const void *tx, uint32_t length)
     while (!(dev->ISR & USART_ISR_TC));
 }
 
+int uart_receive_noblock(USART_TypeDef *dev)
+{
+    uint8_t c;
+
+    if (!(dev->ISR & USART_ISR_RXNE))
+        return -1;
+
+    c = (uint8_t)dev->RDR;
+    return c;
+}
+
 #endif

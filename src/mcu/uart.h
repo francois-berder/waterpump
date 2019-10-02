@@ -72,4 +72,15 @@ void uart_power_down(USART_TypeDef *dev);
  */
 void uart_send(USART_TypeDef *dev, const void *tx, uint32_t length);
 
+/**
+ * @brief Receive one byte over UART
+ *
+ * This is a non-blocking call.
+ *
+ * @param[in] dev
+ * @retval -1 No byte was available
+ * @retval 0-0xFF A byte was read
+ */
+int uart_receive_noblock(USART_TypeDef *dev);
+
 #endif
