@@ -19,9 +19,17 @@
 
 #include "app/board.h"
 #include "app/pumps.h"
+#include "app/sim800l.h"
 #include "mcu/gpio.h"
 #include "mcu/mcu.h"
 #include "mcu/stm32l051xx.h"
+#include "mcu/uart.h"
+
+#define SIMCARD_PIN     (1234)
+
+static struct sim800l_params_t gsm_params = {
+    .dev = USART2,
+};
 
 /* push button req water callback */
 void ext5_callback(void)
@@ -54,6 +62,10 @@ static void init_clocks(void)
 
 int main(void)
 {
+    enum sim800l_network_registration_status_t status;
+    enum sim800l_sim_status_t sim_status;
+    int ret;
+
     init_clocks();
 
     /* Initialize GPIOs */
@@ -67,11 +79,46 @@ int main(void)
     gpio_init_af(GSM_TX_PIN, 4);
     gpio_init_af(GSM_RX_PIN, 4);
 
+    uart_power_up(USART2);
+    uart_set_rx_callback(USART2, sim800l_receive_cb);
+    uart_init(USART2, 115200);
+    uart_enable(USART2);
+
     /* Configure NVIC and enable interrupts */
     NVIC_EnableIRQ(EXTI4_15_IRQn);
     NVIC_EnableIRQ(TIM2_IRQn);
+    NVIC_EnableIRQ(USART2_IRQn);
     __enable_irq();
 
+    /* Initialize SIM800 module */
+    mcu_delay(1000);
+    gpio_write(ENABLE_GSM_PIN, 1);
+    mcu_delay(5000);
+
+    if (sim800l_get_sim_status(&gsm_params, &sim_status)) {
+        gpio_write(ENABLE_GSM_PIN, 0);
+        goto main_loop;
+    }
+
+    if (sim_status == SIM_PIN_LOCK) {
+        if (sim800l_unlock_sim(&gsm_params, SIMCARD_PIN)) {
+            gpio_write(ENABLE_GSM_PIN, 0);
+            goto main_loop;
+        }
+    } else if (sim_status != SIM_READY) {
+        gpio_write(ENABLE_GSM_PIN, 0);
+        goto main_loop;
+    }
+
+    /* Give it a bit of time to register to the network */
+    mcu_delay(10000);
+
+    /* Check network registration status */
+    ret = sim800l_check_network_registration(&gsm_params, &status);
+    if (ret || status == SIM800_NOT_REGISTERED)
+        gpio_write(ENABLE_GSM_PIN, 0);
+
+main_loop:
     while (1)
         __asm__ volatile ("wfi" ::: "memory");
 

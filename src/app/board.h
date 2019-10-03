@@ -36,5 +36,6 @@
 #define CLOCK_LSI           (38000)
 
 #define MCU_TIM2_EN
+#define MCU_UART_EN
 
 #endif
