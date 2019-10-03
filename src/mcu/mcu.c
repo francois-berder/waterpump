@@ -21,23 +21,36 @@
 #include "mcu/mcu.h"
 #include "mcu/stm32l051xx.h"
 
+static int done;
+
+void systick_handler(void)
+{
+    done = 1;
+}
+
 void mcu_delay(unsigned int milliseconds)
 {
     unsigned int secs = milliseconds / 1000;
     milliseconds = milliseconds - secs * 1000;
 
-    SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk;
+    SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk | SysTick_CTRL_TICKINT_Msk;
     SysTick->CTRL |= SysTick_CTRL_ENABLE_Msk;
     while (secs) {
         SysTick->LOAD = CORE_CLOCK - 1;
         SysTick->VAL = 0;
-        while (!(SysTick->CTRL & SysTick_CTRL_COUNTFLAG_Msk));
+        done = 0;
+        /* Wait for SysTick interrupt to wake us */
+        while (!done)
+            __asm__ volatile ("wfi" ::: "memory");
         secs--;
     }
     if (milliseconds) {
         SysTick->LOAD = (CORE_CLOCK / 1000) * milliseconds - 1;
         SysTick->VAL = 0;
-        while (!(SysTick->CTRL & SysTick_CTRL_COUNTFLAG_Msk));
+        done = 0;
+        /* Wait for SysTick interrupt to wake us */
+        while (!done)
+            __asm__ volatile ("wfi" ::: "memory");
     }
     SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;
 }
