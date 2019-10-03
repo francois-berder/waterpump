@@ -21,8 +21,11 @@
 #include "app/board.h"
 #include "mcu/uart.h"
 #include "stm32l051xx.h"
+#include <stddef.h>
 
 #ifdef MCU_UART_EN
+
+static uart_rx_callback_t callbacks[] = {NULL, NULL};
 
 static inline uint32_t get_pclk(USART_TypeDef *dev)
 {
@@ -36,12 +39,30 @@ static inline uint32_t get_pclk(USART_TypeDef *dev)
     }
 }
 
+void usart1_isr_handler(void)
+{
+    if (USART1->ISR & USART_ISR_RXNE) {
+        char c = USART1->RDR;
+        if (callbacks[0])
+            callbacks[0](c);
+    }
+}
+
+void usart2_isr_handler(void)
+{
+    if (USART2->ISR & USART_ISR_RXNE) {
+        char c = USART2->RDR;
+        if (callbacks[1])
+            callbacks[1](c);
+    }
+}
+
 void uart_init(USART_TypeDef *dev, unsigned int baudrate)
 {
     if (baudrate)
         dev->BRR = get_pclk(dev) / baudrate;
 
-    dev->CR1 = USART_CR1_TE | USART_CR1_RE;
+    dev->CR1 = USART_CR1_TE | USART_CR1_RE | USART_CR1_RXNEIE;
     dev->CR2 = 0;
     dev->CR3 = 0;
 }
@@ -95,15 +116,16 @@ void uart_send(USART_TypeDef *dev, const void *tx, uint32_t length)
     while (!(dev->ISR & USART_ISR_TC));
 }
 
-int uart_receive_noblock(USART_TypeDef *dev)
+void uart_set_rx_callback(USART_TypeDef *dev, uart_rx_callback_t cb)
 {
-    uint8_t c;
-
-    if (!(dev->ISR & USART_ISR_RXNE))
-        return -1;
-
-    c = (uint8_t)dev->RDR;
-    return c;
+    switch ((uintptr_t)dev) {
+    case (uintptr_t)USART1:
+        callbacks[0] = cb;
+        break;
+    case (uintptr_t)USART2:
+        callbacks[1] = cb;
+        break;
+    }
 }
 
 #endif

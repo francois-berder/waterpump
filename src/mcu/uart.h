@@ -23,6 +23,8 @@
 #include "stm32l051xx.h"
 #include <stdint.h>
 
+typedef void(*uart_rx_callback_t)(char);
+
 /**
  * @brief Initialise UART peripheral
  *
@@ -73,14 +75,11 @@ void uart_power_down(USART_TypeDef *dev);
 void uart_send(USART_TypeDef *dev, const void *tx, uint32_t length);
 
 /**
- * @brief Receive one byte over UART
- *
- * This is a non-blocking call.
+ * @brief Set callback for UART RX
  *
  * @param[in] dev
- * @retval -1 No byte was available
- * @retval 0-0xFF A byte was read
+ * @param[in] cb
  */
-int uart_receive_noblock(USART_TypeDef *dev);
+void uart_set_rx_callback(USART_TypeDef *dev, uart_rx_callback_t cb);
 
 #endif
