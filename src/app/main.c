@@ -95,7 +95,8 @@ int main(void)
     gpio_write(ENABLE_GSM_PIN, 1);
     mcu_delay(5000);
 
-    if (sim800l_get_sim_status(&gsm_params, &sim_status)) {
+    if (sim800l_check_sim_card_present(&gsm_params)
+    ||  sim800l_get_sim_status(&gsm_params, &sim_status)) {
         gpio_write(ENABLE_GSM_PIN, 0);
         goto main_loop;
     }

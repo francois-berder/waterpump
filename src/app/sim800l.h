@@ -43,6 +43,14 @@ enum sim800l_network_registration_status_t {
 void sim800l_receive_cb(char c);
 
 /**
+ * @brief Check SIM card is present
+ *
+ * @param[in] params
+ * @return 0 if SIM card is present, -1 otherwise
+ */
+int sim800l_check_sim_card_present(struct sim800l_params_t *params);
+
+/**
  * @brief Get SIM status
  *
  * @param[in] params

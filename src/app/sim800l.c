@@ -108,6 +108,16 @@ static void wait_for_cmd_completion(int timeout)
         status = CMD_STATUS_TIMEOUT;
 }
 
+int sim800l_check_sim_card_present(struct sim800l_params_t *params)
+{
+    uart_send(params->dev, "AT+CCID\r\n", 9);
+    current_cmd = CMD_SIM_STATUS;
+    status = CMD_STATUS_ONGOING;
+    wait_for_cmd_completion(500);
+
+    return status == CMD_STATUS_OK ? 0 : -1;
+}
+
 int sim800l_get_sim_status(struct sim800l_params_t *params, enum sim800l_sim_status_t *sim_status)
 {
     uart_send(params->dev, "AT+CPIN?\r\n", 10);
