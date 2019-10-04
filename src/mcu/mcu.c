@@ -21,7 +21,7 @@
 #include "mcu/mcu.h"
 #include "mcu/stm32l051xx.h"
 
-static int done;
+static volatile int done;
 
 void systick_handler(void)
 {
