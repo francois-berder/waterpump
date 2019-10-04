@@ -60,12 +60,39 @@ static void init_clocks(void)
     PWR->CR |= PWR_CR_DBP;
 }
 
-int main(void)
+static int gsm_init(void)
 {
     enum sim800l_network_registration_status_t status;
     enum sim800l_sim_status_t sim_status;
     int ret;
 
+    gpio_write(ENABLE_GSM_PIN, 1);
+    mcu_delay(5000);
+
+    if (sim800l_check_sim_card_present(&gsm_params)
+    ||  sim800l_get_sim_status(&gsm_params, &sim_status))
+        return -1;
+
+    if (sim_status == SIM_PIN_LOCK) {
+        if (sim800l_unlock_sim(&gsm_params, SIMCARD_PIN))
+            return -1;
+    } else if (sim_status != SIM_READY) {
+        return -1
+    }
+
+    /* Give it a bit of time to register to the network */
+    mcu_delay(10000);
+
+    /* Check network registration status */
+    ret = sim800l_check_network_registration(&gsm_params, &status);
+    if (ret || status == SIM800_NOT_REGISTERED)
+        return -1;
+
+    return 0;
+}
+
+int main(void)
+{
     init_clocks();
 
     /* Initialize GPIOs */
@@ -91,35 +118,9 @@ int main(void)
     __enable_irq();
 
     /* Initialize SIM800 module */
-    mcu_delay(1000);
-    gpio_write(ENABLE_GSM_PIN, 1);
-    mcu_delay(5000);
-
-    if (sim800l_check_sim_card_present(&gsm_params)
-    ||  sim800l_get_sim_status(&gsm_params, &sim_status)) {
-        gpio_write(ENABLE_GSM_PIN, 0);
-        goto main_loop;
-    }
-
-    if (sim_status == SIM_PIN_LOCK) {
-        if (sim800l_unlock_sim(&gsm_params, SIMCARD_PIN)) {
-            gpio_write(ENABLE_GSM_PIN, 0);
-            goto main_loop;
-        }
-    } else if (sim_status != SIM_READY) {
-        gpio_write(ENABLE_GSM_PIN, 0);
-        goto main_loop;
-    }
-
-    /* Give it a bit of time to register to the network */
-    mcu_delay(10000);
-
-    /* Check network registration status */
-    ret = sim800l_check_network_registration(&gsm_params, &status);
-    if (ret || status == SIM800_NOT_REGISTERED)
+    if (gsm_init())
         gpio_write(ENABLE_GSM_PIN, 0);
 
-main_loop:
     while (1)
         __asm__ volatile ("wfi" ::: "memory");
 
