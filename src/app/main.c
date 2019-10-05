@@ -77,7 +77,7 @@ static int gsm_init(void)
         if (sim800l_unlock_sim(&gsm_params, SIMCARD_PIN))
             return -1;
     } else if (sim_status != SIM_READY) {
-        return -1
+        return -1;
     }
 
     /* Give it a bit of time to register to the network */
