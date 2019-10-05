@@ -98,4 +98,14 @@ int sim800l_set_sms_format_to_text(struct sim800l_params_t *params);
  */
 int sim800l_use_simcard_for_sms_storage(struct sim800l_params_t *params);
 
+/**
+ * @brief Delete all SMS stored on SIM card
+ *
+ * @param[in] params
+ *
+ * @retval 0 if all SMS on SIM card were deleted
+ * @retval -1 if an error occurred
+ */
+int sim800l_delete_all_sms(struct sim800l_params_t *params);
+
 #endif
