@@ -37,6 +37,7 @@ enum cmd_t {
     CMD_SIM_UNLOCK,
     CMD_SIM_NETWORK_REG_STATUS,
     CMD_SET_SMS_FORMAT,
+    CMD_SET_SMS_STORAGE,
 };
 static enum cmd_t current_cmd;
 
@@ -168,6 +169,16 @@ int sim800l_set_sms_format_to_text(struct sim800l_params_t *params)
 {
     uart_send(params->dev, "AT+CMGF=1\r\n", 11);
     current_cmd = CMD_SET_SMS_FORMAT;
+    status = CMD_STATUS_ONGOING;
+    wait_for_cmd_completion(500);
+
+    return status == CMD_STATUS_OK ? 0 : -1;
+}
+
+int sim800l_use_simcard_for_sms_storage(struct sim800l_params_t *params)
+{
+    uart_send(params->dev, "AT+CPMS=\"SM\"\r\n", 14);
+    current_cmd = CMD_SET_SMS_STORAGE;
     status = CMD_STATUS_ONGOING;
     wait_for_cmd_completion(500);
 

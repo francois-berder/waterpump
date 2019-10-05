@@ -89,4 +89,13 @@ int sim800l_check_network_registration(struct sim800l_params_t *params, enum sim
  */
 int sim800l_set_sms_format_to_text(struct sim800l_params_t *params);
 
+/**
+ * @brief Use SIM card to store SMS
+ *
+ * @param[in] params
+ * @retval 0 if storage for SMS could not be set
+ * @retval -1 if an error occurred
+ */
+int sim800l_use_simcard_for_sms_storage(struct sim800l_params_t *params);
+
 #endif

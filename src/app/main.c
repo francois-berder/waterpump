@@ -88,7 +88,8 @@ static int gsm_init(void)
     if (ret || status == SIM800_NOT_REGISTERED)
         return -1;
 
-    if (sim800l_set_sms_format_to_text(&gsm_params))
+    if (sim800l_set_sms_format_to_text(&gsm_params)
+    ||  sim800l_use_simcard_for_sms_storage(&gsm_params))
         return -1;
 
     return 0;
