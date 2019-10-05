@@ -80,4 +80,13 @@ int sim800l_unlock_sim(struct sim800l_params_t *params, uint32_t pin);
  */
 int sim800l_check_network_registration(struct sim800l_params_t *params, enum sim800l_network_registration_status_t *status);
 
+/**
+ * @brief Set SMS format to text
+ *
+ * @param[in] params
+ * @retval 0 if SMS format is set to text
+ * @retval -1 if an error occurred
+ */
+int sim800l_set_sms_format_to_text(struct sim800l_params_t *params);
+
 #endif
