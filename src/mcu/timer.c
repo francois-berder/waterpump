@@ -84,14 +84,14 @@ void tim6_isr_handler(void)
 #endif
 
 #ifdef MCU_TIM21_EN
-void tim1_brk_tim15_isr_handler(void)
+void tim21_isr_handler(void)
 {
     timer_isr_handler(TIM21, tim21_isr_ctx);
 }
 #endif
 
 #ifdef MCU_TIM22_EN
-void tim1_up_tim16_isr_handler(void)
+void tim22_isr_handler(void)
 {
     timer_isr_handler(TIM22, tim22_isr_ctx);
 }
