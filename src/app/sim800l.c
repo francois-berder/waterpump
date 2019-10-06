@@ -258,7 +258,7 @@ int sim800l_use_simcard_for_sms_storage(struct sim800l_params_t *params)
 
 int sim800l_delete_all_sms(struct sim800l_params_t *params)
 {
-    uart_send(params->dev, "AT+CMGD=1,4\r\n", 13);
+    uart_send(params->dev, "AT+CMGDA=\"DEL ALL\"\r\n", 20);
     current_cmd = CMD_DELETE_ALL_SMS;
     time_remaining = 500;
     wait_for_cmd_completion();
