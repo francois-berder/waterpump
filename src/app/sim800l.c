@@ -45,6 +45,7 @@ enum cmd_t {
     CMD_SET_SMS_FORMAT,
     CMD_SET_SMS_STORAGE,
     CMD_DELETE_ALL_SMS,
+    CMD_DELETE_ALL_RECEIVED_SMS,
     CMD_DELETE_SMS,
 };
 static enum cmd_t current_cmd;
@@ -260,6 +261,16 @@ int sim800l_delete_all_sms(struct sim800l_params_t *params)
 {
     uart_send(params->dev, "AT+CMGDA=\"DEL ALL\"\r\n", 20);
     current_cmd = CMD_DELETE_ALL_SMS;
+    time_remaining = 500;
+    wait_for_cmd_completion();
+
+    return status == CMD_STATUS_OK ? 0 : -1;
+}
+
+int sim800l_delete_all_received_sms(struct sim800l_params_t *params)
+{
+    uart_send(params->dev, "AT+CMGDA=\"DEL INBOX\"\r\n", 22);
+    current_cmd = CMD_DELETE_ALL_RECEIVED_SMS;
     time_remaining = 500;
     wait_for_cmd_completion();
 
