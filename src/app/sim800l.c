@@ -45,6 +45,7 @@ enum cmd_t {
     CMD_SET_SMS_FORMAT,
     CMD_SET_SMS_STORAGE,
     CMD_DELETE_ALL_SMS,
+    CMD_DELETE_SMS,
 };
 static enum cmd_t current_cmd;
 
@@ -259,6 +260,25 @@ int sim800l_delete_all_sms(struct sim800l_params_t *params)
 {
     uart_send(params->dev, "AT+CMGD=1,4\r\n", 13);
     current_cmd = CMD_DELETE_ALL_SMS;
+    time_remaining = 500;
+    wait_for_cmd_completion();
+
+    return status == CMD_STATUS_OK ? 0 : -1;
+}
+
+int sim800l_delete_sms(struct sim800l_params_t *params, uint8_t index)
+{
+    if (index < 10) {
+        char *cmd = "AT+CMGD=X\r\n";
+        cmd[8] = '0' + index;
+        uart_send(params->dev, cmd, 11);
+    } else {
+        char *cmd = "AT+CMGD=XX\r\n";
+        cmd[8] = '0' + ((index / 10) % 10);
+        cmd[9] = '0' + (index % 10);
+        uart_send(params->dev, cmd, 12);
+    }
+    current_cmd = CMD_DELETE_SMS;
     time_remaining = 500;
     wait_for_cmd_completion();
 
