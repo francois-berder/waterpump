@@ -119,6 +119,7 @@ int main(void)
     /* Configure NVIC and enable interrupts */
     NVIC_EnableIRQ(EXTI4_15_IRQn);
     NVIC_EnableIRQ(TIM2_IRQn);
+    NVIC_EnableIRQ(TIM21_IRQn);
     NVIC_EnableIRQ(USART2_IRQn);
     __enable_irq();
 

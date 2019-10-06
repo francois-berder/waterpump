@@ -20,17 +20,23 @@
 
 #include "app/sim800l.h"
 #include "mcu/mcu.h"
+#include "mcu/timer.h"
 #include "mcu/uart.h"
 #include <stdio.h>
 #include <string.h>
 
+#define LINE_COUNT          (4)
+#define MAX_LINE_LENGTH     (256)
+
 enum cmd_status_t {
     CMD_STATUS_OK,
     CMD_STATUS_ERROR,
+    CMD_STATUS_LINE_OVERRUN,
+    CMD_STATUS_LINE_TOO_LONG,
     CMD_STATUS_TIMEOUT,
     CMD_STATUS_ONGOING,
 };
-static enum cmd_status_t status;
+static volatile enum cmd_status_t status;
 
 enum cmd_t {
     CMD_SIM_STATUS,
@@ -42,8 +48,19 @@ enum cmd_t {
 };
 static enum cmd_t current_cmd;
 
-static char line[128];
-static unsigned int length;
+struct __attribute__((packed)) line_t {
+    char line[MAX_LINE_LENGTH];
+    uint8_t ready_for_processing;
+    uint8_t length;
+};
+
+static struct line_t lines[LINE_COUNT];
+static uint8_t line_write_index;
+
+static uint8_t line_read_index;
+static volatile uint8_t line_available_count;
+
+static volatile uint32_t time_remaining;    /**< used for timeout, in millisecond */
 
 union cmd_result_t {
     struct {
@@ -57,16 +74,39 @@ static union cmd_result_t result;
 
 void sim800l_receive_cb(char c)
 {
+    int length;
+
     if (status != CMD_STATUS_ONGOING)
         return;
 
-    line[length++] = c;
-    length &= 0x7F;
+    length = lines[line_write_index].length;
+    lines[line_write_index].line[length] = c;
+    length++;
+    lines[line_write_index].length = length;
+    if (length == MAX_LINE_LENGTH) {
+        /* It means there is no space for NULL character */
+        status = CMD_STATUS_LINE_TOO_LONG;
+    } else if (c == '\n') {
+        lines[line_write_index].line[length] = '\0';
+        lines[line_write_index].ready_for_processing = 1;
 
-    if (c != '\n')
-        return;
+        line_available_count++;
 
-    line[length] = '\0';
+        /* Start using next line */
+        line_write_index++;
+        if (line_write_index == LINE_COUNT)
+            line_write_index = 0;
+
+        /* Was it processed ? */
+        if (lines[line_write_index].ready_for_processing)
+            status = CMD_STATUS_LINE_OVERRUN;
+    }
+}
+
+static void process_line(void)
+{
+    char *line = lines[line_read_index].line;
+    uint8_t length = lines[line_read_index].length;
 
     if (!strcmp("OK\r\n", line)) {
         status = CMD_STATUS_OK;
@@ -92,31 +132,60 @@ void sim800l_receive_cb(char c)
             result.sim_status.status = SIM_ERROR;
     }
 
-    length = 0;
+    /* Make line available for receiving data from SIM800 */
+    lines[line_read_index].length = 0;
+    lines[line_read_index].ready_for_processing = 0;
+
+    line_read_index++;
+    if (line_read_index == LINE_COUNT)
+        line_read_index = 0;
 }
 
-static void wait_for_cmd_completion(int timeout)
+static void cmd_timeout(void *arg)
 {
-    while (timeout) {
-        if (status == CMD_STATUS_OK || status == CMD_STATUS_ERROR)
-            break;
+    (void)arg;
 
-        mcu_delay(5);
-        if (timeout >= 5)
-            timeout -= 5;
-        else
-            timeout = 0;
-    }
-    if (!timeout)
+    if (time_remaining >= 5)
+        time_remaining -= 5;
+    else
         status = CMD_STATUS_TIMEOUT;
+}
+
+static void wait_for_cmd_completion(void)
+{
+    status = CMD_STATUS_ONGOING;
+
+    timer_power_up(TIM21);
+    timer_init(TIM21, 200, 999);
+    timer_init_channel(TIM21, TIMER_CHANNEL_1, 999, cmd_timeout, NULL);
+    timer_start(TIM21);
+
+    while (status == CMD_STATUS_ONGOING) {
+        int line_to_process = 0;
+
+        __disable_irq();
+        if (line_available_count) {
+            line_available_count--;
+            line_to_process = 1;
+        }
+        __enable_irq();
+
+        if (line_to_process)
+            process_line();
+
+        /* Sleep while we wait for command completion */
+        __asm__ volatile ("wfi" ::: "memory");
+    }
+
+    timer_power_down(TIM21);
 }
 
 int sim800l_check_sim_card_present(struct sim800l_params_t *params)
 {
     uart_send(params->dev, "AT+CCID\r\n", 9);
     current_cmd = CMD_SIM_STATUS;
-    status = CMD_STATUS_ONGOING;
-    wait_for_cmd_completion(500);
+    time_remaining = 500;
+    wait_for_cmd_completion();
 
     return status == CMD_STATUS_OK ? 0 : -1;
 }
@@ -125,8 +194,8 @@ int sim800l_get_sim_status(struct sim800l_params_t *params, enum sim800l_sim_sta
 {
     uart_send(params->dev, "AT+CPIN?\r\n", 10);
     current_cmd = CMD_SIM_STATUS;
-    status = CMD_STATUS_ONGOING;
-    wait_for_cmd_completion(500);
+    time_remaining = 500;
+    wait_for_cmd_completion();
 
     if (status == CMD_STATUS_OK && sim_status)
         *sim_status = result.sim_status.status;
@@ -147,8 +216,8 @@ int sim800l_unlock_sim(struct sim800l_params_t *params, uint32_t pin)
 
     uart_send(params->dev, cmd, 15);
     current_cmd = CMD_SIM_UNLOCK;
-    status = CMD_STATUS_ONGOING;
-    wait_for_cmd_completion(500);
+    time_remaining = 500;
+    wait_for_cmd_completion();
 
     return status == CMD_STATUS_OK ? 0 : -1;
 }
@@ -157,8 +226,8 @@ int sim800l_check_network_registration(struct sim800l_params_t *params, enum sim
 {
     uart_send(params->dev, "AT+CREG?\r\n", 10);
     current_cmd = CMD_SIM_NETWORK_REG_STATUS;
-    status = CMD_STATUS_ONGOING;
-    wait_for_cmd_completion(500);
+    time_remaining = 500;
+    wait_for_cmd_completion();
 
     if (status == CMD_STATUS_OK && net_reg_status)
         *net_reg_status = result.net_reg_status.status;
@@ -170,8 +239,8 @@ int sim800l_set_sms_format_to_text(struct sim800l_params_t *params)
 {
     uart_send(params->dev, "AT+CMGF=1\r\n", 11);
     current_cmd = CMD_SET_SMS_FORMAT;
-    status = CMD_STATUS_ONGOING;
-    wait_for_cmd_completion(500);
+    time_remaining = 500;
+    wait_for_cmd_completion();
 
     return status == CMD_STATUS_OK ? 0 : -1;
 }
@@ -180,8 +249,8 @@ int sim800l_use_simcard_for_sms_storage(struct sim800l_params_t *params)
 {
     uart_send(params->dev, "AT+CPMS=\"SM\"\r\n", 14);
     current_cmd = CMD_SET_SMS_STORAGE;
-    status = CMD_STATUS_ONGOING;
-    wait_for_cmd_completion(500);
+    time_remaining = 500;
+    wait_for_cmd_completion();
 
     return status == CMD_STATUS_OK ? 0 : -1;
 }
@@ -190,8 +259,8 @@ int sim800l_delete_all_sms(struct sim800l_params_t *params)
 {
     uart_send(params->dev, "AT+CMGD=1,4\r\n", 13);
     current_cmd = CMD_DELETE_ALL_SMS;
-    status = CMD_STATUS_ONGOING;
-    wait_for_cmd_completion(500);
+    time_remaining = 500;
+    wait_for_cmd_completion();
 
     return status == CMD_STATUS_OK ? 0 : -1;
 }

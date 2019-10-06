@@ -35,7 +35,8 @@
 #define CLOCK_APB2          (16000000)
 #define CLOCK_LSI           (38000)
 
-#define MCU_TIM2_EN
+#define MCU_TIM2_EN     /* Used by pumps module */
+#define MCU_TIM21_EN    /* Used by SIM800 module */
 #define MCU_UART_EN
 
 #endif
