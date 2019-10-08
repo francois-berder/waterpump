@@ -22,11 +22,26 @@
 #include "mcu/mcu.h"
 #include "mcu/timer.h"
 #include "mcu/uart.h"
+#include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 
 #define LINE_COUNT          (4)
 #define MAX_LINE_LENGTH     (256)
+
+/* Position of fields in sms header time variable */
+#define YEAR_DEC_POS    (44)
+#define YEAR_DIGIT_POS  (40)
+#define MONTH_DEC_POS   (36)
+#define MONTH_DIGIT_POS (32)
+#define DAY_DEC_POS     (28)
+#define DAY_DIGIT_POS   (24)
+#define HOUR_DEC_POS    (20)
+#define HOUR_DIGIT_POS  (16)
+#define MIN_DEC_POS     (12)
+#define MIN_DIGIT_POS   (8)
+#define SEC_DEC_POS     (4)
+#define SEC_DIGIT_POS   (0)
 
 enum cmd_status_t {
     CMD_STATUS_OK,
@@ -47,6 +62,7 @@ enum cmd_t {
     CMD_DELETE_ALL_SMS,
     CMD_DELETE_ALL_RECEIVED_SMS,
     CMD_DELETE_SMS,
+    CMD_READ_UNREAD_SMS,
 };
 static enum cmd_t current_cmd;
 
@@ -73,6 +89,65 @@ union cmd_result_t {
     } sim_status;
 };
 static union cmd_result_t result;
+
+static sim800l_receive_sms_callback_t sms_receive_cb;
+static struct sim800l_sms_t sms;
+static bool parsing_sms;        /**< Keep track whether we received some parts of a SMS */
+
+static void parse_sms_header(char *buffer)
+{
+    char *ptr;
+    int sender_length;
+
+    ptr = &buffer[7];
+
+    /* Parse index field */
+    sms.header.index = 0;
+    while (*ptr != ',') {
+        uint8_t digit = *ptr - '0';
+        sms.header.index = sms.header.index * 10 + digit;
+
+        ptr++;
+    }
+
+    /* Skip status field */
+    while (*ptr++ != ',');
+    while (*ptr++ != ',');
+
+    /* Parse address field */
+    ptr++;  /* Skip " */
+    sender_length = 0;
+    while (*ptr != '\"')
+        sms.header.sender[sender_length++] = *ptr++;
+    sms.header.sender[sender_length] = '\0';
+
+    /* Skip address text field */
+    while (*ptr++ != ',');
+    while (*ptr++ != ',');
+
+    /* Skip " */
+    ptr++;
+
+    /* Parse time */
+    sms.header.time = 0;
+    sms.header.time |= (uint64_t)(*ptr++ - '0') << YEAR_DEC_POS;
+    sms.header.time |= (uint64_t)(*ptr++ - '0') << YEAR_DIGIT_POS;
+    ptr++;
+    sms.header.time |= (uint64_t)(*ptr++ - '0') << MONTH_DEC_POS;
+    sms.header.time |= (uint64_t)(*ptr++ - '0') << MONTH_DIGIT_POS;
+    ptr++;
+    sms.header.time |= (uint64_t)(*ptr++ - '0') << DAY_DEC_POS;
+    sms.header.time |= (uint64_t)(*ptr++ - '0') << DAY_DIGIT_POS;
+    ptr++;
+    sms.header.time |= (uint64_t)(*ptr++ - '0') << HOUR_DEC_POS;
+    sms.header.time |= (uint64_t)(*ptr++ - '0') << HOUR_DIGIT_POS;
+    ptr++;
+    sms.header.time |= (uint64_t)(*ptr++ - '0') << MIN_DEC_POS;
+    sms.header.time |= (uint64_t)(*ptr++ - '0') << MIN_DIGIT_POS;
+    ptr++;
+    sms.header.time |= (uint64_t)(*ptr++ - '0') << SEC_DEC_POS;
+    sms.header.time |= (uint64_t)(*ptr++ - '0') << SEC_DIGIT_POS;
+}
 
 void sim800l_receive_cb(char c)
 {
@@ -112,6 +187,10 @@ static void process_line(void)
 
     if (!strcmp("OK\r\n", line)) {
         status = CMD_STATUS_OK;
+        if (current_cmd == CMD_READ_UNREAD_SMS && parsing_sms) {
+            if (sms_receive_cb)
+                sms_receive_cb(&sms);
+        }
     } else if (!strcmp("ERROR\r\n", line)) {
         status = CMD_STATUS_ERROR;
     } else if (current_cmd == CMD_SIM_NETWORK_REG_STATUS) {
@@ -132,6 +211,21 @@ static void process_line(void)
             result.sim_status.status = SIM_PUK_LOCK;
         else if (!strncmp("+CPIN: ", line, 7))
             result.sim_status.status = SIM_ERROR;
+    } else if (current_cmd == CMD_READ_UNREAD_SMS) {
+        if (!strncmp("+CMGL: ", line, 7)) {
+            if (parsing_sms) {
+                if (sms_receive_cb)
+                    sms_receive_cb(&sms);
+            }
+
+            parse_sms_header(line);
+            sms.text_length = 0;
+            sms.text[0] = '\0';
+            parsing_sms = true;
+        } else if (parsing_sms) {
+            sms.text_length += strlen(line);
+            strcat(sms.text, line);
+        }
     }
 
     /* Make line available for receiving data from SIM800 */
@@ -291,6 +385,18 @@ int sim800l_delete_sms(struct sim800l_params_t *params, uint8_t index)
     }
     current_cmd = CMD_DELETE_SMS;
     time_remaining = 500;
+    wait_for_cmd_completion();
+
+    return status == CMD_STATUS_OK ? 0 : -1;
+}
+
+int sim800l_read_all_unread_sms(struct sim800l_params_t *params, sim800l_receive_sms_callback_t cb)
+{
+    parsing_sms = false;
+    sms_receive_cb = cb;
+    uart_send(params->dev, "AT+CMGL=\"REC UNREAD\"\r\n", 22);
+    current_cmd = CMD_READ_UNREAD_SMS;
+    time_remaining = 5000;
     wait_for_cmd_completion();
 
     return status == CMD_STATUS_OK ? 0 : -1;

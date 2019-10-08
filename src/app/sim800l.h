@@ -40,6 +40,20 @@ enum sim800l_network_registration_status_t {
     SIM800_ROAMING,
 };
 
+struct __attribute__((packed)) sim800l_sms_header_t {
+    uint64_t time;
+    uint8_t index;
+    char sender[22];
+};
+
+struct sim800l_sms_t {
+    struct sim800l_sms_header_t header;
+    uint8_t text_length;
+    char text[256];
+};
+
+typedef void(*sim800l_receive_sms_callback_t)(struct sim800l_sms_t *);
+
 void sim800l_receive_cb(char c);
 
 /**
@@ -127,5 +141,15 @@ int sim800l_delete_all_received_sms(struct sim800l_params_t *params);
  * @retval -1 if an error occurred
  */
 int sim800l_delete_sms(struct sim800l_params_t *params, uint8_t index);
+
+/**
+ * @brief Read all unread SMS stored on SIM card
+ *
+ * @param[in] params
+ * @param[in] cb
+ * @retval 0 if all unread SMS on SIM card were read
+ * @retval -1 if an error occurred
+ */
+int sim800l_read_all_unread_sms(struct sim800l_params_t *params, sim800l_receive_sms_callback_t cb);
 
 #endif

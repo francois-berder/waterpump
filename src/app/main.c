@@ -24,17 +24,28 @@
 #include "mcu/mcu.h"
 #include "mcu/stm32l051xx.h"
 #include "mcu/uart.h"
+#include <string.h>
 
 #define SIMCARD_PIN     (1234)
 
 static struct sim800l_params_t gsm_params = {
     .dev = USART2,
 };
+static int gsm_enabled;
 
 /* push button req water callback */
 void ext5_callback(void)
 {
     pumps_start();
+}
+
+static void handle_sms(struct sim800l_sms_t *sms)
+{
+    if (sms->text_length < 11)
+        return;
+
+    if (!strncmp(sms->text, "REQ WATER\r\n", 11))
+        pumps_start();
 }
 
 static void init_clocks(void)
@@ -93,6 +104,8 @@ static int gsm_init(void)
     ||  sim800l_delete_all_sms(&gsm_params))
         return -1;
 
+    gsm_enabled = 1;
+
     return 0;
 }
 
@@ -127,8 +140,23 @@ int main(void)
     if (gsm_init())
         gpio_write(ENABLE_GSM_PIN, 0);
 
-    while (1)
+    while (1) {
         __asm__ volatile ("wfi" ::: "memory");
+
+        /*
+         * If SIM800L waked us, let's wait it sent everything
+         * before we attempt to read from UART
+         */
+        mcu_delay(20);
+
+        /* Read SMS */
+        if (gsm_enabled) {
+            if (sim800l_read_all_unread_sms(&gsm_params, handle_sms)) {
+                gpio_write(ENABLE_GSM_PIN, 0);
+                gsm_enabled = 0;
+            }
+        }
+    }
 
     __builtin_unreachable();
 }
