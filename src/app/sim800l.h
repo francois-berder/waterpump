@@ -152,4 +152,13 @@ int sim800l_delete_sms(struct sim800l_params_t *params, uint8_t index);
  */
 int sim800l_read_all_unread_sms(struct sim800l_params_t *params, sim800l_receive_sms_callback_t cb);
 
+/**
+ * @brief Get time from network
+ *
+ * @param[in] params
+ * @param[out] time
+ * @return 0 if successful, -1 otherwise
+ */
+int sim800l_get_time(struct sim800l_params_t *params, uint64_t *time);
+
 #endif

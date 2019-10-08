@@ -63,6 +63,7 @@ enum cmd_t {
     CMD_DELETE_ALL_RECEIVED_SMS,
     CMD_DELETE_SMS,
     CMD_READ_UNREAD_SMS,
+    CMD_GET_TIME,
 };
 static enum cmd_t current_cmd;
 
@@ -87,6 +88,9 @@ union cmd_result_t {
     struct {
         enum sim800l_sim_status_t status;
     } sim_status;
+    struct {
+        uint64_t time;
+    } network_time;
 };
 static union cmd_result_t result;
 
@@ -225,6 +229,28 @@ static void process_line(void)
         } else if (parsing_sms) {
             sms.text_length += strlen(line);
             strcat(sms.text, line);
+        }
+    } else if (current_cmd == CMD_GET_TIME) {
+        if (!strncmp("+CCLK: ", line, 7)) {
+            char *ptr = &line[8];
+
+            result.network_time.time |= (uint64_t)(*ptr++ - '0') << YEAR_DEC_POS;
+            result.network_time.time |= (uint64_t)(*ptr++ - '0') << YEAR_DIGIT_POS;
+            ptr++;
+            result.network_time.time |= (uint64_t)(*ptr++ - '0') << MONTH_DEC_POS;
+            result.network_time.time |= (uint64_t)(*ptr++ - '0') << MONTH_DIGIT_POS;
+            ptr++;
+            result.network_time.time |= (uint64_t)(*ptr++ - '0') << DAY_DEC_POS;
+            result.network_time.time |= (uint64_t)(*ptr++ - '0') << DAY_DIGIT_POS;
+            ptr++;
+            result.network_time.time |= (uint64_t)(*ptr++ - '0') << HOUR_DEC_POS;
+            result.network_time.time |= (uint64_t)(*ptr++ - '0') << HOUR_DIGIT_POS;
+            ptr++;
+            result.network_time.time |= (uint64_t)(*ptr++ - '0') << MIN_DEC_POS;
+            result.network_time.time |= (uint64_t)(*ptr++ - '0') << MIN_DIGIT_POS;
+            ptr++;
+            result.network_time.time |= (uint64_t)(*ptr++ - '0') << SEC_DEC_POS;
+            result.network_time.time |= (uint64_t)(*ptr++ - '0') << SEC_DIGIT_POS;
         }
     }
 
@@ -398,6 +424,18 @@ int sim800l_read_all_unread_sms(struct sim800l_params_t *params, sim800l_receive
     current_cmd = CMD_READ_UNREAD_SMS;
     time_remaining = 5000;
     wait_for_cmd_completion();
+
+    return status == CMD_STATUS_OK ? 0 : -1;
+}
+
+int sim800l_get_time(struct sim800l_params_t *params, uint64_t *time)
+{
+    uart_send(params->dev, "AT+CCLK?\r\n", 10);
+    current_cmd = CMD_GET_TIME;
+    time_remaining = 500;
+    wait_for_cmd_completion();
+    if (status == CMD_STATUS_OK)
+        *time = result.network_time.time;
 
     return status == CMD_STATUS_OK ? 0 : -1;
 }
