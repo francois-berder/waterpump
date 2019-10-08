@@ -153,6 +153,16 @@ int sim800l_delete_sms(struct sim800l_params_t *params, uint8_t index);
 int sim800l_read_all_unread_sms(struct sim800l_params_t *params, sim800l_receive_sms_callback_t cb);
 
 /**
+ * @brief Send SMS
+ *
+ * @param[in] params
+ * @param[in] dest
+ * @param[in] text
+ * @return 0 if successful, -1 otherwise
+ */
+int sim800l_send_sms(struct sim800l_params_t *params, const char *dest, const char *text);
+
+/**
  * @brief Get time from network
  *
  * @param[in] params
