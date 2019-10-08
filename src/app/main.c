@@ -87,6 +87,14 @@ static int gsm_init(void)
     if (sim_status == SIM_PIN_LOCK) {
         if (sim800l_unlock_sim(&gsm_params, SIMCARD_PIN))
             return -1;
+
+        /* Give it a bit of time to unlock SIM card */
+        mcu_delay(5000);
+
+        if (sim800l_get_sim_status(&gsm_params, &sim_status))
+            return -1;
+        if (sim_status != SIM_READY)
+            return -1;
     } else if (sim_status != SIM_READY) {
         return -1;
     }
