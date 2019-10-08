@@ -113,6 +113,7 @@ void uart_send(USART_TypeDef *dev, const void *tx, uint32_t length)
         dev->TDR = *buffer++;
     }
 
+    while (!(dev->ISR & USART_ISR_TXE));
     while (!(dev->ISR & USART_ISR_TC));
 }
 
