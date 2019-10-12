@@ -31,7 +31,6 @@
 static struct sim800l_params_t gsm_params = {
     .dev = USART2,
 };
-static int gsm_enabled;
 
 /* push button req water callback */
 void ext5_callback(void)
@@ -73,12 +72,7 @@ static void init_clocks(void)
 
 static int gsm_init(void)
 {
-    enum sim800l_network_registration_status_t status;
     enum sim800l_sim_status_t sim_status;
-    int ret;
-
-    gpio_write(ENABLE_GSM_PIN, 1);
-    mcu_delay(5000);
 
     if (sim800l_check_sim_card_present(&gsm_params)
     ||  sim800l_get_sim_status(&gsm_params, &sim_status))
@@ -99,26 +93,36 @@ static int gsm_init(void)
         return -1;
     }
 
-    /* Give it a bit of time to register to the network */
-    mcu_delay(10000);
-
-    /* Check network registration status */
-    ret = sim800l_check_network_registration(&gsm_params, &status);
-    if (ret || status == SIM800_NOT_REGISTERED)
-        return -1;
-
     if (sim800l_set_sms_format_to_text(&gsm_params)
     ||  sim800l_use_simcard_for_sms_storage(&gsm_params)
     ||  sim800l_delete_all_sms(&gsm_params))
         return -1;
 
-    gsm_enabled = 1;
+    return 0;
+}
+
+static int gsm_update(void)
+{
+    enum sim800l_network_registration_status_t status;
+
+    if (sim800l_check_network_registration(&gsm_params, &status))
+        return -1;
+
+    if (status == SIM800_NOT_REGISTERED) {
+        if (sim800l_connect_to_network(&gsm_params))
+            return -1;
+    }
+
+    if (sim800l_read_all_unread_sms(&gsm_params, handle_sms))
+        return -1;
 
     return 0;
 }
 
 int main(void)
 {
+    int gsm_enabled = 0;
+
     init_clocks();
 
     /* Initialize GPIOs */
@@ -145,8 +149,14 @@ int main(void)
     __enable_irq();
 
     /* Initialize SIM800 module */
-    if (gsm_init())
+    gsm_enabled = 1;
+    gpio_write(ENABLE_GSM_PIN, 1);
+    mcu_delay(5000);
+
+    if (gsm_init()) {
         gpio_write(ENABLE_GSM_PIN, 0);
+        gsm_enabled = 0;
+    }
 
     while (1) {
         __asm__ volatile ("wfi" ::: "memory");
@@ -157,9 +167,8 @@ int main(void)
          */
         mcu_delay(20);
 
-        /* Read SMS */
         if (gsm_enabled) {
-            if (sim800l_read_all_unread_sms(&gsm_params, handle_sms)) {
+            if (gsm_update()) {
                 gpio_write(ENABLE_GSM_PIN, 0);
                 gsm_enabled = 0;
             }
