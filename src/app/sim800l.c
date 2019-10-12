@@ -202,6 +202,8 @@ static void process_line(void)
         if (!strncmp("+CREG: ", line, 7) && length >= 10) {
             if (line[9] == '1')
                 result.net_reg_status.status = SIM800_REGISTERED;
+            else if (line[9] == '2')
+                result.net_reg_status.status = SIM800_REGISTERING;
             else if (line[9] == '5')
                 result.net_reg_status.status = SIM800_ROAMING;
             else

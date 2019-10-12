@@ -36,6 +36,7 @@ enum sim800l_sim_status_t {
 
 enum sim800l_network_registration_status_t {
     SIM800_NOT_REGISTERED,
+    SIM800_REGISTERING,
     SIM800_REGISTERED,
     SIM800_ROAMING,
 };
