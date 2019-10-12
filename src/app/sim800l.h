@@ -96,6 +96,15 @@ int sim800l_unlock_sim(struct sim800l_params_t *params, uint32_t pin);
 int sim800l_check_network_registration(struct sim800l_params_t *params, enum sim800l_network_registration_status_t *status);
 
 /**
+ * @brief Connect to network
+ *
+ * @param[in] params
+ * @retval 0 if SIM800L module is registered to the network
+ * @retval -1 if an error occurred
+ */
+int sim800l_connect_to_network(struct sim800l_params_t *params);
+
+/**
  * @brief Set SMS format to text
  *
  * @param[in] params
