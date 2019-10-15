@@ -93,8 +93,13 @@ static int gsm_init(void)
         return -1;
     }
 
-    if (sim800l_set_sms_format_to_text(&gsm_params)
-    ||  sim800l_use_simcard_for_sms_storage(&gsm_params)
+    if (sim800l_set_sms_format_to_text(&gsm_params))
+        return -1;
+
+    /* Wait for SIM card to become "SMS READY" */
+    mcu_delay(5000);
+
+    if (sim800l_use_simcard_for_sms_storage(&gsm_params)
     ||  sim800l_delete_all_sms(&gsm_params))
         return -1;
 
