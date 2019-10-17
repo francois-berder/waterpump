@@ -1,0 +1,5 @@
+(fp_lib_table
+  (lib (name SIM800L)(type KiCad)(uri ${KIPRJMOD}/SIM800L.pretty)(options "")(descr ""))
+  (lib (name Connector_USB)(type KiCad)(uri ${KIPRJMOD}/Connector_USB.pretty)(options "")(descr ""))
+  (lib (name Button_Switch_THT)(type KiCad)(uri ${KIPRJMOD}/Button_Switch_THT.pretty)(options "")(descr ""))
+)
