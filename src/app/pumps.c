@@ -32,15 +32,15 @@ static void pumps_stop(void *arg)
     (void)arg;
 
     counter++;
-    if (counter < 3)
-        return;
-
-    gpio_write(ENABLE_PUMP1_PIN, 0);
-    gpio_write(ENABLE_PUMP2_PIN, 0);
-
-    timer_power_down(TIM2);
-
-    running = false;
+    if (counter == 3) {
+        gpio_write(ENABLE_PUMP1_PIN, 0);
+    } else if (counter == 4) {
+        gpio_write(ENABLE_PUMP2_PIN, 1);
+    } else if (counter == 7) {
+        gpio_write(ENABLE_PUMP2_PIN, 0);
+        timer_power_down(TIM2);
+        running = false;
+    }
 }
 
 void pumps_start(void)
@@ -50,7 +50,6 @@ void pumps_start(void)
 
 
     gpio_write(ENABLE_PUMP1_PIN, 1);
-    gpio_write(ENABLE_PUMP2_PIN, 1);
 
     running = true;
     counter = 0;
