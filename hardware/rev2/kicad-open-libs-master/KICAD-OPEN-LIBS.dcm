@@ -1,0 +1,262 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP +2.048V
+K POWER, PWR
+$ENDCMP
+#
+$CMP +3.5V
+K POWER, PWR
+$ENDCMP
+#
+$CMP +4.2V
+K POWER, PWR
+$ENDCMP
+#
+$CMP +40V
+K POWER, PWR
+$ENDCMP
+#
+$CMP -40V
+K POWER, PWR
+$ENDCMP
+#
+$CMP 2N7002P
+F transistors/mos/*.*
+$ENDCMP
+#
+$CMP 4052_BR
+D Dual Analog Multiplexer 4 to 1 line
+K CMOS MUX MUX4
+$ENDCMP
+#
+$CMP 74LS04
+D Hex Inverseur
+K TTL not inv
+$ENDCMP
+#
+$CMP 74LS04_BR
+D Hex Inverseur
+K TTL not inv
+$ENDCMP
+#
+$CMP 74LS125_BR
+D Quad buffer 3 State out
+K TTL buffer 3State
+$ENDCMP
+#
+$CMP 74LS126_BR
+D Quad buffer 3 State out
+K TTL Buffer 3State
+$ENDCMP
+#
+$CMP 74LS32_BR
+D Quad Or 2 inputs
+K TTL Or2
+$ENDCMP
+#
+$CMP 78L05
+D Linear Regulator +5V
+K POWER REGUL
+F regulator\lm78lxx.pdf
+$ENDCMP
+#
+$CMP ADR5041
+D Voltage Ref
+K VOLTAGE REFERENCE
+$ENDCMP
+#
+$CMP BAT54CDW
+D Double diode Schottky (Serie)
+K DEV DIODE
+$ENDCMP
+#
+$CMP BD139
+F transistors/bipolar/*.*
+$ENDCMP
+#
+$CMP CLV1A-FKB
+D Cree PLCC4 3 in 1 SMD LED
+K led rgb diode
+F http://www.cree.com/led-components/media/documents/CLV1L-FKB-1238.pdf
+$ENDCMP
+#
+$CMP CONN_08X02
+D Connector, single row, 08x02
+K connector
+$ENDCMP
+#
+$CMP Crystal_SMD_4pin
+D Four pin crystal
+K Quartz, Resonator, Ceramic, Filter
+$ENDCMP
+#
+$CMP DBL_SCH_DIODE
+D ESD Protection Diodes
+$ENDCMP
+#
+$CMP DISPLAY_BL
+D Afficheur LCD nLignes
+K DEV
+$ENDCMP
+#
+$CMP DMG6968UDM
+F transistors/mos/*.*
+$ENDCMP
+#
+$CMP DMN3135LVT
+F transistors/mos/*.*
+$ENDCMP
+#
+$CMP DMN63D8LDW
+F transistors/mos/*.*
+$ENDCMP
+#
+$CMP DMP2240UDM
+F transistors/mos/*.*
+$ENDCMP
+#
+$CMP DUAL-MOSFET-P_B
+F transistors/mos/*.*
+$ENDCMP
+#
+$CMP DUAL_PNP
+F transistors/bipolar/*.*
+$ENDCMP
+#
+$CMP ESDA6V1SC6Y
+D Dual schottky diode, common anode
+K diode
+$ENDCMP
+#
+$CMP FDG6306P
+D Dual P Channel MOSFET SOT23-5
+K Dual P-Channel MOSFET
+$ENDCMP
+#
+$CMP IRF9530N
+F transistors/mos/*.*
+$ENDCMP
+#
+$CMP IRFML8244
+F transistors/mos/*.*
+$ENDCMP
+#
+$CMP LM324
+D Quad Op amp.
+K AmpliOp
+F op_amps/lm324.pdf
+$ENDCMP
+#
+$CMP LM324AN
+D Quad Op amp.
+K AmpliOp
+F op_amps/lm324.pdf
+$ENDCMP
+#
+$CMP LM324N
+D Quad Op amp.
+K AmpliOp
+F op_amps/lm324.pdf
+$ENDCMP
+#
+$CMP LM338T
+D LM338 (TO-220)
+K Adjustable Voltage Regulator 5A
+$ENDCMP
+#
+$CMP LM339-QFN
+D Quad comparator.
+K Comp diff
+F op_amps/lm139.pdf
+$ENDCMP
+#
+$CMP LM7805
+D Linear Regulator +5V
+K POWER REGUL
+F regulator\lm78xx.pdf
+$ENDCMP
+#
+$CMP LM7812
+D Linear Regulator +12V
+K POWER REGUL
+F regulator\lm78xx.pdf
+$ENDCMP
+#
+$CMP LM8117A
+D Linear Regulator +5V
+K POWER REGUL
+F regulator\lm78xx.pdf
+$ENDCMP
+#
+$CMP LSM6DS33
+D I2C/SPI, iNEMO inertial module: always-on 3D accelerometer and 3D gyroscope
+K Accelerometer Gyroscope MEMS
+$ENDCMP
+#
+$CMP LT1964-BYP-2
+D MICROPOWER 100mA LDO adjustable regulator TSOT-23 5-leads package
+K REGULATOR POSITIVE POWER LDO adjustable
+F http://cds.linear.com/docs/en/datasheet/1761sff.pdf
+$ENDCMP
+#
+$CMP MAX3222
+D Dual RS232 driver/receiver, 5V supply, 120kb/s, 0C-70C
+K rs232 uart transceiver line-driver
+F http://www.ti.com/lit/ds/symlink/max232.pdf
+$ENDCMP
+#
+$CMP MAX3232
+D 3.0V to 5.5V, Low-Power, up to 1Mbps, True RS-232 Transceivers Using Four 0.1μF External Capacitors
+K rs232 uart transceiver line-driver
+F https://datasheets.maximintegrated.com/en/ds/MAX3222-MAX3241.pdf
+$ENDCMP
+#
+$CMP MC34063_BR
+D 1.5A step up/down/inverting switching regulator
+F regulator/mc34063.pdf
+$ENDCMP
+#
+$CMP MCP6V02
+D Precision Dual Amp-Op
+K AmpliOp
+$ENDCMP
+#
+$CMP MMBTA3904
+F transistors/bipolar/*.*
+$ENDCMP
+#
+$CMP MOSFET-N_B
+F transistors/mos/*.*
+$ENDCMP
+#
+$CMP MOSFET-P_B
+F transistors/mos/*.*
+$ENDCMP
+#
+$CMP MOSFET_N
+D FLASH-Based 8-Bit CMOS Microcontroller (TQFP package)
+K PIC
+F transistors/mos/*.*
+$ENDCMP
+#
+$CMP SI6913DQ
+F transistors/mos/*.*
+$ENDCMP
+#
+$CMP TL074
+D Quad Op amp. Mos
+K AmpliOp Mos
+$ENDCMP
+#
+$CMP TL074_BR
+D Quad Op amp.
+K AmpliOp
+F op_amps/lm324.pdf
+$ENDCMP
+#
+$CMP TLC274
+D Quad Op amp. Mos
+K AmpliOp Mos
+$ENDCMP
+#
+#End Doc Library

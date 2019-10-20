@@ -1,0 +1,5 @@
+(sym_lib_table
+  (lib (name KICAD-OPEN-LIBS)(type Legacy)(uri ${KIPRJMOD}/kicad-open-libs-master/KICAD-OPEN-LIBS.lib)(options "")(descr ""))
+  (lib (name SIM800L)(type Legacy)(uri /home/francois/projects/kicad/waterpump/SIM800L.lib)(options "")(descr ""))
+  (lib (name waterpump-rescue)(type Legacy)(uri ${KIPRJMOD}/waterpump-rescue.lib)(options "")(descr ""))
+)
