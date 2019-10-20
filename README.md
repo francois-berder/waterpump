@@ -23,3 +23,12 @@ $ make flash-target                 # Flash release firmware
 $ BUILDTYPE=debug make flash-target # Flash debug firmware
 $ BUILDTYPE=debug make debug-target # Start debugging firmware
 ```
+
+## Power requirements
+
+The GSM module can use up to 2A and each pump should not use more than 1A due to the choice of MOSFET transistors (especially on rev 2).
+For this reason, I recommend powering this board with a 5V 3A power supply. Alternatively if you are using only 2.5W pumps, a 5V 2.5A can be used.
+
+## Switching on water pump
+
+Both pumps are switched on in sequence for 3 seconds each if the push button is pressed or if the GSM modules receives a text message starting with "REQ WATER".
