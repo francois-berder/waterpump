@@ -24,6 +24,17 @@ $ BUILDTYPE=debug make flash-target # Flash debug firmware
 $ BUILDTYPE=debug make debug-target # Start debugging firmware
 ```
 
+## Building hardware
+
+In `hardware` folder, there are Gerber files sent to [JLCPCB](https://jlcpcb.com/) for each revision of the board. I recommend that you build the latest revision of the board. Components can be bought on [RS online](https://uk.rs-online.com/web/).
+
+### Issues with rev1 board
+
+  * SIM800L Footprint is incorrect
+  * No mounting holes
+  * micro USB connector is too far away from the side of the board
+  * Power circuit for SIM800L is not working properly. Large polarized capacitors are missing on the input and output of the LDO voltage regulator. The regulator is not able to handle load transients fast enough, causing the SIM800L to brown out.
+
 ## Power requirements
 
 The GSM module can use up to 2A and each pump should not use more than 1A due to the choice of MOSFET transistors (especially on rev 2).
