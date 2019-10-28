@@ -18,6 +18,7 @@
  */
 
 #include "app/board.h"
+#include "app/pumps.h"
 #include "mcu/gpio.h"
 #include "mcu/timer.h"
 #include "mcu/stm32l051xx.h"
@@ -26,31 +27,57 @@
 
 static bool running;
 static int counter;
+static enum pump_t pumps_to_enable;
 
 static void pumps_stop(void *arg)
 {
     (void)arg;
 
     counter++;
-    if (counter == 3) {
-        gpio_write(ENABLE_PUMP1_PIN, 0);
-    } else if (counter == 4) {
-        gpio_write(ENABLE_PUMP2_PIN, 1);
-    } else if (counter == 7) {
-        gpio_write(ENABLE_PUMP2_PIN, 0);
-    } else if (counter == 8) {
-        timer_power_down(TIM2);
-        running = false;
+
+    switch (pumps_to_enable) {
+    case PUMP_1:
+        if (counter == 3) {
+            gpio_write(ENABLE_PUMP1_PIN, 0);
+        } else if (counter == 4) {
+            timer_power_down(TIM2);
+            running = false;
+        }
+        break;
+    case PUMP_2:
+        if (counter == 3) {
+            gpio_write(ENABLE_PUMP2_PIN, 0);
+        } else if (counter == 4) {
+            timer_power_down(TIM2);
+            running = false;
+        }
+        break;
+    case PUMP_ALL:
+        if (counter == 3) {
+            gpio_write(ENABLE_PUMP1_PIN, 0);
+        } else if (counter == 4) {
+            gpio_write(ENABLE_PUMP2_PIN, 1);
+        } else if (counter == 7) {
+            gpio_write(ENABLE_PUMP2_PIN, 0);
+        } else if (counter == 8) {
+            timer_power_down(TIM2);
+            running = false;
+        }
+        break;
     }
 }
 
-void pumps_start(void)
+void pumps_start(enum pump_t pumps)
 {
     if (running)
         return;
 
+    pumps_to_enable = pumps;
 
-    gpio_write(ENABLE_PUMP1_PIN, 1);
+    if (pumps_to_enable == PUMP_1 || pumps_to_enable == PUMP_ALL)
+        gpio_write(ENABLE_PUMP1_PIN, 1);
+    else
+        gpio_write(ENABLE_PUMP2_PIN, 1);
 
     running = true;
     counter = 0;

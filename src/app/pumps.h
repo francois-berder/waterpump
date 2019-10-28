@@ -20,9 +20,17 @@
 #ifndef PUMPS_H
 #define PUMPS_H
 
+enum pump_t {
+    PUMP_1 = 1,
+    PUMP_2 = 2,
+    PUMP_ALL = 3,
+};
+
 /**
  * @brief Switch on pumps for 5 seconds
+ *
+ * @param[in] pumps
  */
-void pumps_start(void);
+void pumps_start(enum pump_t pumps);
 
 #endif

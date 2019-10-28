@@ -35,7 +35,7 @@ static struct sim800l_params_t gsm_params = {
 /* push button req water callback */
 void ext5_callback(void)
 {
-    pumps_start();
+    pumps_start(PUMP_ALL);
 }
 
 static void handle_sms(struct sim800l_sms_t *sms)
@@ -44,7 +44,7 @@ static void handle_sms(struct sim800l_sms_t *sms)
         return;
 
     if (!strncmp(sms->text, "REQ WATER\r\n", 11))
-        pumps_start();
+        pumps_start(PUMP_ALL);
 }
 
 static void init_clocks(void)
