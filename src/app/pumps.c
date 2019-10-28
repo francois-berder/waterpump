@@ -38,6 +38,7 @@ static void pumps_stop(void *arg)
         gpio_write(ENABLE_PUMP2_PIN, 1);
     } else if (counter == 7) {
         gpio_write(ENABLE_PUMP2_PIN, 0);
+    } else if (counter == 8) {
         timer_power_down(TIM2);
         running = false;
     }
