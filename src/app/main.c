@@ -40,10 +40,10 @@ void ext5_callback(void)
 
 static void handle_sms(struct sim800l_sms_t *sms)
 {
-    if (sms->text_length != 9 && sms->text_length != 11)
+    if (sms->text_length < 9)
         return;
 
-    if (!strncmp(sms->text, "WATER ALL\r\n", 11))
+    if (sms->text_length >= 11 && !strncmp(sms->text, "WATER ALL\r\n", 11))
         pumps_start(PUMP_ALL);
     else if (!strncmp(sms->text, "WATER 1\r\n", 9))
         pumps_start(PUMP_1);
