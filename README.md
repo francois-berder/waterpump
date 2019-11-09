@@ -35,6 +35,10 @@ In `hardware` folder, there are Gerber files sent to [JLCPCB](https://jlcpcb.com
   * micro USB connector is too far away from the side of the board
   * Power circuit for SIM800L is not working properly. Large polarized capacitors are missing on the input and output of the LDO voltage regulator. The regulator is not able to handle load transients fast enough, causing the SIM800L to brown out.
 
+### Issues with rev2 board
+
+  * SIM800L footprint is stil incorrect ! Although it is easier to insert the module in pin headers than on rev1.
+
 ## Power requirements
 
 The GSM module can use up to 2A and each pump should not use more than 1A due to the choice of MOSFET transistors (especially on rev 2).
