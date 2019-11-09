@@ -139,7 +139,7 @@ int main(void)
     gpio_init_out(ENABLE_GSM_PIN, 0);
     gpio_init_out(ENABLE_PUMP1_PIN, 0);
     gpio_init_out(ENABLE_PUMP2_PIN, 0);
-    gpio_init_int(REQ_WATER_PIN, PULL_NONE, GPIO_FALLING);
+    gpio_init_int(REQ_WATER_PIN, PULL_UP, GPIO_FALLING);
     gpio_init_out(GSM_TX_PIN, 1);
     gpio_init_in(GSM_RX_PIN, PULL_UP);
     gpio_init_af(GSM_TX_PIN, 4);
