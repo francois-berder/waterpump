@@ -22,7 +22,7 @@
 
 #include "mcu/gpio.h"
 
-#define ENABLE_GSM_PIN      (GPIO_PIN(PORT_B, 7))
+#define ENABLE_GSM_PIN      (GPIO_PIN(PORT_A, 0))
 #define ENABLE_PUMP1_PIN    (GPIO_PIN(PORT_B, 6))
 #define ENABLE_PUMP2_PIN    (GPIO_PIN(PORT_B, 5))
 #define LED_PIN             (GPIO_PIN(PORT_A, 7))
