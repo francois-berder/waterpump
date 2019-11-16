@@ -2,7 +2,7 @@
 
 **This is an ongoing project so do not expect everything to work !**
 
-This project is an automatic system for watering plants. Everyday, pumps are switched on for a few seconds to provide enough water to some plants. The device can be controlled by sending SMS to change the schedule. In addition, a small push-button is present to water plants immediately.
+This project is an automatic system for watering plants. Everyday, pumps are switched on for a few seconds to provide enough water to some plants. The device can be controlled by sending SMS to change the schedule or water plants. In addition, a small push-button is present to water plants immediately.
 
 ## Build and flash instructions
 
