@@ -28,9 +28,12 @@
 
 #define SIMCARD_PIN     (1234)
 
+#define GSM_ERROR_COUNTER_THRESHOLD     (10)
+
 static struct sim800l_params_t gsm_params = {
     .dev = USART2,
 };
+static uint32_t gsm_error_counter;
 
 /* push button req water callback */
 void ext5_callback(void)
@@ -176,11 +179,17 @@ int main(void)
          */
         mcu_delay(20);
 
-        if (gsm_enabled) {
-            if (gsm_update()) {
+        if (!gsm_enabled)
+            continue;
+
+        if (gsm_update()) {
+            gsm_error_counter++;
+            if (gsm_error_counter > GSM_ERROR_COUNTER_THRESHOLD) {
                 gpio_write(ENABLE_GSM_PIN, 0);
                 gsm_enabled = 0;
             }
+        } else {
+            gsm_error_counter = 0;
         }
     }
 
