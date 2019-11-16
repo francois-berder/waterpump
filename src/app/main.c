@@ -157,6 +157,7 @@ int main(void)
     NVIC_EnableIRQ(EXTI4_15_IRQn);
     NVIC_EnableIRQ(TIM2_IRQn);
     NVIC_EnableIRQ(TIM21_IRQn);
+    NVIC_EnableIRQ(TIM22_IRQn);
     NVIC_EnableIRQ(USART2_IRQn);
     __enable_irq();
 

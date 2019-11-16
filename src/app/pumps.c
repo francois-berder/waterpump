@@ -22,6 +22,7 @@
 #include "mcu/gpio.h"
 #include "mcu/timer.h"
 #include "mcu/stm32l051xx.h"
+#include "status.h"
 #include <stdbool.h>
 #include <stddef.h>
 
@@ -42,6 +43,7 @@ static void pumps_stop(void *arg)
         } else if (counter == 4) {
             timer_power_down(TIM2);
             running = false;
+            status_on();
         }
         break;
     case PUMP_2:
@@ -50,6 +52,7 @@ static void pumps_stop(void *arg)
         } else if (counter == 4) {
             timer_power_down(TIM2);
             running = false;
+            status_on();
         }
         break;
     case PUMP_ALL:
@@ -62,6 +65,7 @@ static void pumps_stop(void *arg)
         } else if (counter == 8) {
             timer_power_down(TIM2);
             running = false;
+            status_on();
         }
         break;
     }
@@ -91,4 +95,5 @@ void pumps_start(enum pump_t pumps)
     timer_init(TIM2, 1, 9999);
     timer_init_channel(TIM2, TIMER_CHANNEL_1, 9999, pumps_stop, NULL);
     timer_start(TIM2);
+    status_blink();
 }

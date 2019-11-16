@@ -17,27 +17,11 @@
  * along with waterpump.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef BOARD_H
-#define BOARD_H
+#ifndef STATUS_H
+#define STATUS_H
 
-#include "mcu/gpio.h"
+void status_on(void);
 
-#define ENABLE_GSM_PIN      (GPIO_PIN(PORT_A, 0))
-#define ENABLE_PUMP1_PIN    (GPIO_PIN(PORT_B, 6))
-#define ENABLE_PUMP2_PIN    (GPIO_PIN(PORT_B, 5))
-#define LED_PIN             (GPIO_PIN(PORT_A, 7))
-#define REQ_WATER_PIN       (GPIO_PIN(PORT_A, 5))
-#define GSM_TX_PIN          (GPIO_PIN(PORT_A, 2))
-#define GSM_RX_PIN          (GPIO_PIN(PORT_A, 3))
-
-#define CORE_CLOCK          (16000000)
-#define CLOCK_APB1          (16000000)
-#define CLOCK_APB2          (16000000)
-#define CLOCK_LSI           (38000)
-
-#define MCU_TIM2_EN     /* Used by pumps module */
-#define MCU_TIM21_EN    /* Used by SIM800 module */
-#define MCU_TIM22_EN    /* Used by status module */
-#define MCU_UART_EN
+void status_blink(void);
 
 #endif

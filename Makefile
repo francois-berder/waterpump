@@ -36,6 +36,7 @@ JLINK_DEVICE := STM32L051K6
 SRCS := src/app/main.c \
 		src/app/pumps.c \
 		src/app/sim800l.c \
+		src/app/status.c \
 		src/mcu/gpio.c \
 		src/mcu/mcu.c \
 		src/mcu/startup.c \

@@ -17,27 +17,28 @@
  * along with waterpump.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef BOARD_H
-#define BOARD_H
 
-#include "mcu/gpio.h"
+#include "board.h"
+#include "mcu/timer.h"
+#include "status.h"
+#include <stddef.h>
 
-#define ENABLE_GSM_PIN      (GPIO_PIN(PORT_A, 0))
-#define ENABLE_PUMP1_PIN    (GPIO_PIN(PORT_B, 6))
-#define ENABLE_PUMP2_PIN    (GPIO_PIN(PORT_B, 5))
-#define LED_PIN             (GPIO_PIN(PORT_A, 7))
-#define REQ_WATER_PIN       (GPIO_PIN(PORT_A, 5))
-#define GSM_TX_PIN          (GPIO_PIN(PORT_A, 2))
-#define GSM_RX_PIN          (GPIO_PIN(PORT_A, 3))
+static void blink_led(void *arg)
+{
+    (void)arg;
+    gpio_toggle(LED_PIN);
+}
 
-#define CORE_CLOCK          (16000000)
-#define CLOCK_APB1          (16000000)
-#define CLOCK_APB2          (16000000)
-#define CLOCK_LSI           (38000)
+void status_on(void)
+{
+    timer_power_down(TIM22);
+    gpio_write(LED_PIN, 1);
+}
 
-#define MCU_TIM2_EN     /* Used by pumps module */
-#define MCU_TIM21_EN    /* Used by SIM800 module */
-#define MCU_TIM22_EN    /* Used by status module */
-#define MCU_UART_EN
-
-#endif
+void status_blink(void)
+{
+    timer_power_up(TIM22);
+    timer_init(TIM22, 10, 9999);
+    timer_init_channel(TIM22, TIMER_CHANNEL_1, 9999, blink_led, NULL);
+    timer_start(TIM22);
+}
