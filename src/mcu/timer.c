@@ -148,9 +148,9 @@ void timer_init_channel(TIM_TypeDef *dev, enum timer_channel_t channel, uint16_t
         break;
 #endif
 #ifdef MCU_TIM22_EN
-    case (uintptr_t)TIM16:
-        tim16_isr_ctx[channel].cb = cb;
-        tim16_isr_ctx[channel].arg = arg;
+    case (uintptr_t)TIM22:
+        tim22_isr_ctx[channel].cb = cb;
+        tim22_isr_ctx[channel].arg = arg;
         break;
 #endif
     default:
