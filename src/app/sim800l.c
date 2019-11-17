@@ -65,6 +65,7 @@ enum cmd_t {
     CMD_DELETE_SMS,
     CMD_READ_UNREAD_SMS,
     CMD_SEND_SMS,
+    CMD_ENABLE_TIME,
     CMD_GET_TIME,
 };
 static enum cmd_t current_cmd;
@@ -463,6 +464,15 @@ int sim800l_send_sms(struct sim800l_params_t *params, const char *dest, const ch
     return status == CMD_STATUS_OK ? 0 : -1;
 }
 
+int sim800l_enable_time(struct sim800l_params_t *params)
+{
+    uart_send(params->dev, "AT+CLTS=1\r\n", 11);
+    current_cmd = CMD_ENABLE_TIME;
+    time_remaining = 500;
+    wait_for_cmd_completion();
+
+    return status == CMD_STATUS_OK ? 0 : -1;
+}
 
 int sim800l_get_time(struct sim800l_params_t *params, uint64_t *time)
 {

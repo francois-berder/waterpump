@@ -173,7 +173,18 @@ int sim800l_read_all_unread_sms(struct sim800l_params_t *params, sim800l_receive
 int sim800l_send_sms(struct sim800l_params_t *params, const char *dest, const char *text);
 
 /**
+ * @brief Enable time feature
+ *
+ * @param[in] params
+ * @return 0 if successful, -1 otherwise
+ */
+int sim800l_enable_time(struct sim800l_params_t *params);
+
+/**
  * @brief Get time from network
+ *
+ * Make sure that you called sim800l_get_time before calling
+ * this function.
  *
  * @param[in] params
  * @param[out] time
