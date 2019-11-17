@@ -22,6 +22,7 @@
 #include "app/sim800l.h"
 #include "mcu/gpio.h"
 #include "mcu/mcu.h"
+#include "mcu/rtc.h"
 #include "mcu/stm32l051xx.h"
 #include "mcu/uart.h"
 #include <string.h>
@@ -68,18 +69,14 @@ static void init_clocks(void)
     /* Enable LSI clock (for RTC) */
     RCC->CSR |= RCC_CSR_LSION;
     while (!(RCC->CSR & RCC_CSR_LSIRDY));
-
-    /* Clock RTC using LSI */
-    RCC->CSR &= ~RCC_CSR_RTCSEL;
-    RCC->CSR |= 0x2 << RCC_CSR_RTCSEL_Pos;
-
-    /* Disable write protection for RTC module */
-    PWR->CR |= PWR_CR_DBP;
 }
 
 static int gsm_init(void)
 {
     enum sim800l_sim_status_t sim_status;
+
+    if (sim800l_enable_time(&gsm_params))
+        return -1;
 
     if (sim800l_check_sim_card_present(&gsm_params)
     ||  sim800l_get_sim_status(&gsm_params, &sim_status))
@@ -169,6 +166,19 @@ int main(void)
     if (gsm_init()) {
         gpio_write(ENABLE_GSM_PIN, 0);
         gsm_enabled = 0;
+    }
+
+    /* Initialize RTC */
+    rtc_init();
+
+    /* Use 2G network to set time */
+    if (gsm_enabled) {
+        uint64_t now;
+        if (!sim800l_get_time(&gsm_params, &now)) {
+            union rtc_time_t t;
+            t.asUint64 = now;
+            rtc_set_time(t);
+        }
     }
 
     while (1) {

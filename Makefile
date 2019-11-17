@@ -39,6 +39,7 @@ SRCS := src/app/main.c \
 		src/app/status.c \
 		src/mcu/gpio.c \
 		src/mcu/mcu.c \
+		src/mcu/rtc.c \
 		src/mcu/startup.c \
 		src/mcu/timer.c \
 		src/mcu/uart.c
