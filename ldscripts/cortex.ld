@@ -4,6 +4,13 @@ ENTRY(reset_handler)
 
 SECTIONS {
 
+    .eeprom :
+    {
+        KEEP(*(.eeprom .eeprom.*))
+    } > eeprom
+
+    . = ALIGN(4);
+
     .text :
     {
         KEEP(*(.cortex_vectors))
