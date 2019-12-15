@@ -37,6 +37,14 @@ union rtc_time_t {
     uint64_t asUint64;
 };
 
+enum rtc_alarm_t {
+    RTC_ALARM_A,
+    RTC_ALARM_B,
+    RTC_ALARM_COUNT,
+};
+
+typedef void(*rtc_alarm_cb_t)(void);
+
 /**
  * @brief Initialize RTC module
  */
@@ -48,5 +56,23 @@ void rtc_init(void);
  * @param[in] t
  */
 void rtc_set_time(union rtc_time_t t);
+
+/**
+ * @brief Set alarm
+ *
+ * @param[in] index
+ * @param[in] hour in BCD
+ * @param[in] min in BCD
+ * @param[in] sec in BCD
+ * @param[in] cb
+ */
+void rtc_set_alarm(enum rtc_alarm_t index, uint8_t hour, uint8_t min, uint8_t sec, rtc_alarm_cb_t cb);
+
+/**
+ * @brief Remove alarm
+ *
+ * @param[in] index
+ */
+void rtc_remove_alarm(enum rtc_alarm_t index);
 
 #endif
