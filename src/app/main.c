@@ -26,6 +26,7 @@
 #include "mcu/rtc.h"
 #include "mcu/stm32l051xx.h"
 #include "mcu/uart.h"
+#include <ctype.h>
 #include <string.h>
 
 #define SIMCARD_PIN     (1234)
@@ -54,6 +55,59 @@ static void handle_sms(struct sim800l_sms_t *sms)
         pumps_start(PUMP_1);
     else if (!strncmp(sms->text, "WATER 2\r\n", 9))
         pumps_start(PUMP_2);
+    else if (sms->text_length == 17 && !strcmp(sms->text, "SCHEDULE 0 STOP\r\n"))
+        schedule_disable(0);
+    else if (sms->text_length == 17 && !strcmp(sms->text, "SCHEDULE 1 STOP\r\n"))
+        schedule_disable(1);
+    else if ((sms->text_length == 23 || sms->text_length == 25)
+          && !strncmp(sms->text, "SCHEDULE ", 9)) {
+        uint8_t index;
+        uint8_t hour, min, sec;
+        enum pump_t pumps;
+
+        if (!isdigit(sms->text[9])
+        ||  !isdigit(sms->text[11])
+        ||  !isdigit(sms->text[12])
+        ||  sms->text[13] != ':'
+        ||  !isdigit(sms->text[14])
+        ||  !isdigit(sms->text[15])
+        ||  sms->text[16] != ':'
+        ||  !isdigit(sms->text[17])
+        ||  !isdigit(sms->text[18]))
+            return;
+
+        index = sms->text[9] - '0';
+        if (index != 0 && index != 1)
+            return;
+
+        hour = (sms->text[11] - '0') * 10 + (sms->text[12] - '0');
+        if (hour > 23)
+            return;
+
+        min = (sms->text[14] - '0') * 10 + (sms->text[15] - '0');
+        if (min > 59)
+            return;
+
+        sec = (sms->text[17] - '0') * 10 + (sms->text[18] - '0');
+        if (sec > 59)
+            return;
+
+        if (sms->text_length == 23) {
+            if (sms->text[20] == '1')
+                pumps = PUMP_1;
+            else if (sms->text[20] == '2')
+                pumps = PUMP_2;
+            else
+                return;
+        } else {
+            if (sms->text[20] != 'A' || sms->text[21] != 'L' || sms->text[22] != 'L')
+                return;
+
+            pumps = PUMP_ALL;
+        }
+
+        schedule_configure(index, hour, min, sec, pumps);
+    }
 }
 
 static void init_clocks(void)
