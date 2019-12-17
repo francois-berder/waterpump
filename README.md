@@ -39,7 +39,8 @@ In `hardware` folder, there are Gerber files sent to [JLCPCB](https://jlcpcb.com
 
 ### Issues with rev2 board
 
-  * SIM800L footprint is stil incorrect ! Although it is easier to insert the module in pin headers than on rev1.
+  * SIM800L footprint is still incorrect ! Although it is easier to insert the module in pin headers than on rev1.
+  * micro USB connector should be replaced by a barrel connector because USB cables should not be used to provide 3A.
 
 ## Power requirements
 
