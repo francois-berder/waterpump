@@ -19,6 +19,7 @@
 
 #include "app/board.h"
 #include "app/pumps.h"
+#include "app/schedule.h"
 #include "app/sim800l.h"
 #include "mcu/gpio.h"
 #include "mcu/mcu.h"
@@ -156,6 +157,7 @@ int main(void)
     NVIC_EnableIRQ(TIM21_IRQn);
     NVIC_EnableIRQ(TIM22_IRQn);
     NVIC_EnableIRQ(USART2_IRQn);
+    NVIC_EnableIRQ(RTC_IRQn);
     __enable_irq();
 
     /* Initialize SIM800 module */
@@ -180,6 +182,8 @@ int main(void)
             rtc_set_time(t);
         }
     }
+
+    schedule_init();
 
     while (1) {
         __asm__ volatile ("wfi" ::: "memory");
