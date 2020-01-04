@@ -8,7 +8,16 @@ This project is an automatic system for watering plants. Everyday, pumps are swi
 
 ## Build and flash instructions
 
-First of all, you need to install the [ARM embedded toolchain](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm) and [JLink Software and Documentation Pack](https://www.segger.com/downloads/jlink/#J-LinkSoftwareAndDocumentationPack).
+### Prerequisites
+
+You need to install the [ARM embedded toolchain](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm) and [JLink Software and Documentation Pack](https://www.segger.com/downloads/jlink/#J-LinkSoftwareAndDocumentationPack).
+
+### SIM card configuration
+
+To retrieve time from network, the firmware needs the APN name which depends on your
+network provider. The macro `SIM800_APN_NAME` is currently set to `"free"` in the Makefile because I am using a SIM card from Free Mobile. Feel free to change it.
+
+### Commands
 
 There are two types of build: release and debug.
 
