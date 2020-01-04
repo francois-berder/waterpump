@@ -1,7 +1,5 @@
 # Waterpump
 
-**This is an ongoing project so do not expect everything to work !**
-
 ![waterpump board](waterpump-rev2.jpg "Waterpump board rev 2")
 
 This project is an automatic system for watering plants. Everyday, pumps are switched on for a few seconds to provide enough water to some plants. The device can be controlled by sending SMS to change the schedule or water plants. In addition, a small push-button is present to water plants immediately.
