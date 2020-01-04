@@ -31,6 +31,9 @@ CFLAGS += -ggdb -g3 -gz
 LDFLAGS += -ggdb -g3 -gz
 endif
 
+# Do not forget to change this. It depends on your SIM card provider.
+CFLAGS += -DSIM800_APN_NAME=\"free\"
+
 JLINK_DEVICE := STM32L051K6
 
 SRCS := src/app/main.c \

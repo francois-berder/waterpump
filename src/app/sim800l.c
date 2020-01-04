@@ -26,6 +26,10 @@
 #include <stdio.h>
 #include <string.h>
 
+#ifndef SIM800_APN_NAME
+#error "SIM800_APN_NAME is not set"
+#endif
+
 #define LINE_COUNT          (4)
 #define MAX_LINE_LENGTH     (256)
 
@@ -67,6 +71,7 @@ enum cmd_t {
     CMD_SEND_SMS,
     CMD_ENABLE_TIME,
     CMD_GET_TIME,
+    CMD_SYNC_TIME,
 };
 static enum cmd_t current_cmd;
 
@@ -464,7 +469,7 @@ int sim800l_send_sms(struct sim800l_params_t *params, const char *dest, const ch
     return status == CMD_STATUS_OK ? 0 : -1;
 }
 
-int sim800l_enable_time(struct sim800l_params_t *params)
+int sim800l_enable_time_update_from_network(struct sim800l_params_t *params)
 {
     uart_send(params->dev, "AT+CLTS=1\r\n", 11);
     current_cmd = CMD_ENABLE_TIME;
@@ -484,4 +489,47 @@ int sim800l_get_time(struct sim800l_params_t *params, uint64_t *time)
         *time = result.network_time.time;
 
     return status == CMD_STATUS_OK ? 0 : -1;
+}
+
+int sim800l_sync_time(struct sim800l_params_t *params)
+{
+    int sync_time_done = 0;
+
+    /* Configure and activate GPRS connection */
+    uart_send(params->dev, "AT+SAPBR=3,1,\"CONTYPE\",\"GPRS\"\r\n", 31);
+    current_cmd = CMD_SYNC_TIME;
+    time_remaining = 1000;
+    wait_for_cmd_completion();
+    if (status != CMD_STATUS_OK)
+        return -1;
+
+    uart_send(params->dev, "AT+SAPBR=3,1,\"APN\",\"" SIM800_APN_NAME "\"\r\n", 28);
+    current_cmd = CMD_SYNC_TIME;
+    time_remaining = 1000;
+    wait_for_cmd_completion();
+    if (status != CMD_STATUS_OK)
+        return -1;
+
+    uart_send(params->dev, "AT+SAPBR=1,1\r\n", 14);
+    current_cmd = CMD_SYNC_TIME;
+    time_remaining = 1000;
+    wait_for_cmd_completion();
+    if (status != CMD_STATUS_OK)
+        return -1;
+
+    /* Retrieve current network time and save it  */
+    uart_send(params->dev, "AT+CIPGSMLOC=2,1\r\n", 18);
+    current_cmd = CMD_SYNC_TIME;
+    time_remaining = 15000;
+    wait_for_cmd_completion();
+    if (status == CMD_STATUS_OK)
+        sync_time_done = 1;
+
+    /* Deactivate GPRS connection */
+    uart_send(params->dev, "AT+SAPBR=0,1\r\n", 14);
+    current_cmd = CMD_SYNC_TIME;
+    time_remaining = 1000;
+    wait_for_cmd_completion();
+
+    return (status == CMD_STATUS_OK && sync_time_done) ? 0 : -1;
 }

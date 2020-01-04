@@ -173,23 +173,25 @@ int sim800l_read_all_unread_sms(struct sim800l_params_t *params, sim800l_receive
 int sim800l_send_sms(struct sim800l_params_t *params, const char *dest, const char *text);
 
 /**
- * @brief Enable time feature
+ * @brief Enable time update from network
  *
  * @param[in] params
  * @return 0 if successful, -1 otherwise
  */
-int sim800l_enable_time(struct sim800l_params_t *params);
+int sim800l_enable_time_update_from_network(struct sim800l_params_t *params);
 
 /**
- * @brief Get time from network
- *
- * Make sure that you called sim800l_get_time before calling
- * this function.
+ * @brief Get time from SIM800 RTC
  *
  * @param[in] params
  * @param[out] time
  * @return 0 if successful, -1 otherwise
  */
 int sim800l_get_time(struct sim800l_params_t *params, uint64_t *time);
+
+/**
+ * @brief Synchronize SIM800 time with network time
+ */
+int sim800l_sync_time(struct sim800l_params_t *params);
 
 #endif

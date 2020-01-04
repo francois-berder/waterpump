@@ -130,7 +130,7 @@ static int gsm_init(void)
 {
     enum sim800l_sim_status_t sim_status;
 
-    if (sim800l_enable_time(&gsm_params))
+    if (sim800l_enable_time_update_from_network(&gsm_params))
         return -1;
 
     if (sim800l_check_sim_card_present(&gsm_params)
@@ -230,10 +230,13 @@ int main(void)
     /* Use 2G network to set time */
     if (gsm_enabled) {
         uint64_t now;
-        if (!sim800l_get_time(&gsm_params, &now)) {
-            union rtc_time_t t;
-            t.asUint64 = now;
-            rtc_set_time(t);
+
+        if (!sim800l_sync_time(&gsm_params)) {
+            if (!sim800l_get_time(&gsm_params, &now)) {
+                union rtc_time_t t;
+                t.asUint64 = now;
+                rtc_set_time(t);
+            }
         }
     }
 
