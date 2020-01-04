@@ -49,11 +49,19 @@ struct __attribute__((packed)) schedule_t {
 /* Reserve some bytes in eeprom to store schedule */
 static struct schedule_t __attribute__((used, section(".eeprom"))) schedule_info;
 
+static int is_schedule_valid(struct schedule_t *s)
+{
+    return s->magic0 == SCHEDULE_MAGIC0 && s->magic1 == SCHEDULE_MAGIC1;
+}
+
 void handle_rtc_alarm_a(void)
 {
     struct schedule_t s;
 
     eeprom_read((uint32_t)&schedule_info, &s, sizeof(s));
+    if (!is_schedule_valid(&s))
+        return;
+
     if (!s.t0.in_use)
         return;
 
@@ -70,6 +78,9 @@ void handle_rtc_alarm_b(void)
     struct schedule_t s;
 
     eeprom_read((uint32_t)&schedule_info, &s, sizeof(s));
+    if (!is_schedule_valid(&s))
+        return;
+
     if (!s.t1.in_use)
         return;
 
@@ -87,7 +98,7 @@ void schedule_init(void)
 
     eeprom_read((uint32_t)&schedule_info, &s, sizeof(s));
 
-    if (s.magic0 != SCHEDULE_MAGIC0 || s.magic1 != SCHEDULE_MAGIC1) {
+    if (!is_schedule_valid(&s)) {
         memset(&s, 0, sizeof(s));
         s.magic0 = SCHEDULE_MAGIC0;
         s.magic1 = SCHEDULE_MAGIC1;
@@ -115,6 +126,9 @@ void schedule_configure(int index, uint8_t hour, uint8_t min, uint8_t sec, enum 
 
     /* Store new schedule in EEPROM */
     eeprom_read((uint32_t)&schedule_info, &s, sizeof(s));
+    if (!is_schedule_valid(&s))
+        return;
+
     if (index == 0) {
         s.t0.hour = hour;
         s.t0.min = min;
@@ -143,6 +157,9 @@ void schedule_enable(int index)
 
     /* Store new schedule in EEPROM */
     eeprom_read((uint32_t)&schedule_info, &s, sizeof(s));
+    if (!is_schedule_valid(&s))
+        return;
+
     if (index == 0)
         s.t0.in_use = 1;
     else if (index == 1)
@@ -162,6 +179,9 @@ void schedule_disable(int index)
 
     /* Store new schedule in EEPROM */
     eeprom_read((uint32_t)&schedule_info, &s, sizeof(s));
+    if (!is_schedule_valid(&s))
+        return;
+
     if (index == 0)
         s.t0.in_use = 0;
     else if (index == 1)
