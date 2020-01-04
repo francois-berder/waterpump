@@ -50,3 +50,13 @@ For this reason, I recommend powering this board with a 5V 3A power supply. Alte
 ## Switching on water pump
 
 Both pumps are switched on in sequence for 3 seconds each if the push button is pressed or if the GSM modules receives a text message starting with "WATER ALL". If you only want to enable pump 1 or 2, send text message "WATER 1" or "WATER 2".
+
+## SMS commands
+
+| SMS | description | examples |
+| --- | ----------- | ------- |
+| WATER <pump_index> | Turn on , | "WATER 1" |
+| WATER ALL | Turn on both pumps | "WATER ALL" |
+| SCHEDULE <index> STOP | Disable | "SCHEDULE 1 STOP" |
+| SCHEDULE <index> <hour>:<min>:<sec> ALL | Turn on | "SCHEDULE 0 19:04:57 ALL" |
+| SCHEDULE <index> <hour>:<min>:<sec> <pump_index> | Turn on a pump once per day | "SCHEDULE 1 06:43:00 1" |
