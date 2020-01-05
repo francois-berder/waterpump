@@ -244,6 +244,7 @@ static void process_line(void)
         if (!strncmp("+CCLK: ", line, 7)) {
             char *ptr = &line[8];
 
+            result.network_time.time = 0;
             result.network_time.time |= (uint64_t)(*ptr++ - '0') << YEAR_DEC_POS;
             result.network_time.time |= (uint64_t)(*ptr++ - '0') << YEAR_DIGIT_POS;
             ptr++;
