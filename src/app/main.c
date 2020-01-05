@@ -55,9 +55,9 @@ static void handle_sms(struct sim800l_sms_t *sms)
         pumps_start(PUMP_1);
     else if (!strncmp(sms->text, "WATER 2\r\n", 9))
         pumps_start(PUMP_2);
-    else if (sms->text_length == 17 && !strcmp(sms->text, "SCHEDULE 0 STOP\r\n"))
+    else if (!strncmp(sms->text, "SCHEDULE 0 STOP\r\n", 17))
         schedule_disable(0);
-    else if (sms->text_length == 17 && !strcmp(sms->text, "SCHEDULE 1 STOP\r\n"))
+    else if (!strncmp(sms->text, "SCHEDULE 1 STOP\r\n", 17))
         schedule_disable(1);
     else if ((sms->text_length == 23 || sms->text_length == 25)
           && !strncmp(sms->text, "SCHEDULE ", 9)) {
