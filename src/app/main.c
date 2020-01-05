@@ -240,12 +240,11 @@ int main(void)
     if (gsm_enabled) {
         uint64_t now;
 
-        if (!sim800l_sync_time(&gsm_params)) {
-            if (!sim800l_get_time(&gsm_params, &now)) {
-                union rtc_time_t t;
-                t.asUint64 = now;
-                rtc_set_time(t);
-            }
+        if (!sim800l_sync_time(&gsm_params)
+        &&  !sim800l_get_time(&gsm_params, &now)) {
+            union rtc_time_t t;
+            t.asUint64 = now;
+            rtc_set_time(t);
         }
     }
 
