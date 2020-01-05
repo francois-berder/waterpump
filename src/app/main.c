@@ -61,8 +61,10 @@ static void handle_sms(struct sim800l_sms_t *sms)
         schedule_disable(0);
     else if (!strncmp(sms->text, "SCHEDULE 1 STOP\r\n", 17))
         schedule_disable(1);
-    else if ((sms->text_length == 23 || sms->text_length == 25)
-          && !strncmp(sms->text, "SCHEDULE ", 9)) {
+    else if (!strncmp(sms->text, "SCHEDULE STATUS\r\n", 17)) {
+        req_schedule_status = 1;
+        strcpy(req_schedule_number, sms->header.sender);
+    } else if (sms->text_length >= 23 && !strncmp(sms->text, "SCHEDULE ", 9)) {
         uint8_t index;
         uint8_t hour, min, sec;
         enum pump_t pumps;
@@ -94,24 +96,18 @@ static void handle_sms(struct sim800l_sms_t *sms)
         if (sec > 59)
             return;
 
-        if (sms->text_length == 23) {
-            if (sms->text[20] == '1')
-                pumps = PUMP_1;
-            else if (sms->text[20] == '2')
-                pumps = PUMP_2;
-            else
-                return;
-        } else {
-            if (sms->text[20] != 'A' || sms->text[21] != 'L' || sms->text[22] != 'L')
-                return;
-
+        if (sms->text[20] == '1')
+            pumps = PUMP_1;
+        else if (sms->text[20] == '2')
+            pumps = PUMP_2;
+        else if (sms->text[20] == 'A'
+              && sms->text[21] == 'L'
+              && sms->text[22] == 'L')
             pumps = PUMP_ALL;
-        }
+        else
+            return;
 
         schedule_configure(index, hour, min, sec, pumps);
-    } else if (!strncmp(sms->text, "SCHEDULE STATUS\r\n", 17)) {
-        req_schedule_status = 1;
-        strcpy(req_schedule_number, sms->header.sender);
     }
 }
 
