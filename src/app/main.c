@@ -37,6 +37,8 @@ static struct sim800l_params_t gsm_params = {
     .dev = USART2,
 };
 static uint32_t gsm_error_counter;
+static int req_schedule_status;
+static char req_schedule_number[22];
 
 /* push button req water callback */
 void ext5_callback(void)
@@ -107,6 +109,9 @@ static void handle_sms(struct sim800l_sms_t *sms)
         }
 
         schedule_configure(index, hour, min, sec, pumps);
+    } else if (!strncmp(sms->text, "SCHEDULE STATUS\r\n", 17)) {
+        req_schedule_status = 1;
+        strcpy(req_schedule_number, sms->header.sender);
     }
 }
 
@@ -177,8 +182,16 @@ static int gsm_update(void)
             return -1;
     }
 
+    req_schedule_status = 0;
     if (sim800l_read_all_unread_sms(&gsm_params, handle_sms))
         return -1;
+
+    if (req_schedule_status) {
+        char buf[128];
+        schedule_to_string(buf);
+        sim800l_send_sms(&gsm_params, req_schedule_number, buf);
+        req_schedule_status = 0;
+    }
 
     return 0;
 }

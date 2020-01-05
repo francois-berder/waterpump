@@ -54,4 +54,11 @@ void schedule_enable(int index);
  */
 void schedule_disable(int index);
 
+/**
+ * @brief Print schedule status
+ * 
+ * @param[out] dst
+ */
+void schedule_to_string(char *dst);
+
 #endif

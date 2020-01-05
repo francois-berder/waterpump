@@ -194,3 +194,71 @@ void schedule_disable(int index)
     else if (index == 1)
         rtc_remove_alarm(RTC_ALARM_B);
 }
+
+void schedule_to_string(char *dst)
+{
+    struct schedule_t s;
+
+    dst[0] = '\0';
+    eeprom_read((uint32_t)&schedule_info, &s, sizeof(s));
+
+    if (!is_schedule_valid(&s)) {
+        strcpy(dst, "SCHEDULE INVALID\r\n");
+    } else {
+        char *tmp;
+        /* Schedule 0 */
+        strcat(dst, "0: ");
+        if (s.t0.in_use)
+            strcat(dst, "ON ");
+        else
+            strcat(dst, "OFF ");
+
+        if (s.t0.enable_pump1 && s.t0.enable_pump2)
+            strcat(dst, "PUMP 1 & 2 ");
+        if (s.t0.enable_pump1 && !s.t0.enable_pump2)
+            strcat(dst, "PUMP 1 ");
+        if (!s.t0.enable_pump1 && s.t0.enable_pump2)
+            strcat(dst, "PUMP 2 ");
+
+        tmp = &dst[strlen(dst)];
+        *tmp++ = '0' + s.t0.hour / 10;
+        *tmp++ = '0' + s.t0.hour % 10;
+        *tmp++ = ':';
+        *tmp++ = '0' + s.t0.min / 10;
+        *tmp++ = '0' + s.t0.min % 10;
+        *tmp++ = ':';
+        *tmp++ = '0' + s.t0.sec / 10;
+        *tmp++ = '0' + s.t0.sec % 10;
+        *tmp++ = '\0';
+
+        strcat(dst, "\r\n");
+        strcat(dst, "\r\n");
+
+        /* Schedule 1 */
+        strcat(dst, "1: ");
+        if (s.t1.in_use)
+            strcat(dst, "ON ");
+        else
+            strcat(dst, "OFF ");
+
+        if (s.t1.enable_pump1 && s.t1.enable_pump2)
+            strcat(dst, "PUMP 1 & 2 ");
+        if (s.t1.enable_pump1 && !s.t1.enable_pump2)
+            strcat(dst, "PUMP 1 ");
+        if (!s.t1.enable_pump1 && s.t1.enable_pump2)
+            strcat(dst, "PUMP 2 ");
+
+        tmp = &dst[strlen(dst)];
+        *tmp++ = '0' + s.t1.hour / 10;
+        *tmp++ = '0' + s.t1.hour % 10;
+        *tmp++ = ':';
+        *tmp++ = '0' + s.t1.min / 10;
+        *tmp++ = '0' + s.t1.min % 10;
+        *tmp++ = ':';
+        *tmp++ = '0' + s.t1.sec / 10;
+        *tmp++ = '0' + s.t1.sec % 10;
+        *tmp++ = '\0';
+
+        strcat(dst, "\r\n");
+    }
+}

@@ -67,3 +67,4 @@ Both pumps are switched on in sequence for 3 seconds each if the push button is 
 | SCHEDULE <index> STOP | Disable | "SCHEDULE 1 STOP" |
 | SCHEDULE <index> <hour>:<min>:<sec> ALL | Turn on | "SCHEDULE 0 19:04:57 ALL" |
 | SCHEDULE <index> <hour>:<min>:<sec> <pump_index> | Turn on a pump once per day | "SCHEDULE 1 06:43:00 1" |
+| SCHEDULE STATUS | Request schedule status | "SCHEDULE STATUS" |
