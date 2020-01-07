@@ -34,7 +34,10 @@
 #endif
 
 #define GSM_ERROR_COUNTER_THRESHOLD     (10)
+
+#ifndef DEFAULT_PUMP_DURATION
 #define DEFAULT_PUMP_DURATION           (3)
+#endif
 
 static struct sim800l_params_t gsm_params = {
     .dev = USART2,
