@@ -235,6 +235,10 @@ void schedule_to_string(char *dst)
             *tmp++ = ':';
             *tmp++ = '0' + s.t0.sec / 10;
             *tmp++ = '0' + s.t0.sec % 10;
+            *tmp++ = ' ';
+            if (s.t0.duration >= 10)
+                *tmp++ = '0' + s.t0.duration / 10;
+            *tmp++ = '0' + s.t0.duration % 10;
             *tmp++ = '\0';
 
             strcat(dst, "\r\n");
@@ -265,6 +269,10 @@ void schedule_to_string(char *dst)
             *tmp++ = ':';
             *tmp++ = '0' + s.t1.sec / 10;
             *tmp++ = '0' + s.t1.sec % 10;
+            *tmp++ = ' ';
+            if (s.t1.duration >= 10)
+                *tmp++ = '0' + s.t1.duration / 10;
+            *tmp++ = '0' + s.t1.duration % 10;
             *tmp++ = '\0';
 
             strcat(dst, "\r\n");
