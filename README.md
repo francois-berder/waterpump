@@ -12,6 +12,8 @@ You need to install the [ARM embedded toolchain](https://developer.arm.com/tools
 
 ### SIM card configuration
 
+The SIM card might need to be unlocked. The default PIN is set to 1234 by the `SIMCARD_PIN` macro that can be overriden.
+
 To retrieve time from network, the firmware needs the APN name which depends on your
 network provider. The macro `SIM800_APN_NAME` is currently set to `"free"` in the Makefile because I am using a SIM card from Free Mobile. Feel free to change it.
 
