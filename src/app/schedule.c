@@ -35,7 +35,7 @@ struct __attribute__((packed)) schedule_time_t {
         uint8_t in_use : 1;
         uint8_t enable_pump1 : 1;
         uint8_t enable_pump2 : 1;
-        uint8_t : 5;
+        uint8_t duration : 5;
     };
 };
 
@@ -66,11 +66,11 @@ void handle_rtc_alarm_a(void)
         return;
 
     if (s.t0.enable_pump1 && s.t0.enable_pump2)
-        pumps_start(PUMP_ALL);
+        pumps_start(PUMP_ALL, s.t0.duration);
     else if (s.t0.enable_pump1 && !s.t0.enable_pump2)
-        pumps_start(PUMP_1);
+        pumps_start(PUMP_1, s.t0.duration);
     else if (!s.t0.enable_pump1 && s.t0.enable_pump2)
-        pumps_start(PUMP_2);
+        pumps_start(PUMP_2, s.t1.duration);
 }
 
 void handle_rtc_alarm_b(void)
@@ -85,11 +85,11 @@ void handle_rtc_alarm_b(void)
         return;
 
     if (s.t1.enable_pump1 && s.t1.enable_pump2)
-        pumps_start(PUMP_ALL);
+        pumps_start(PUMP_ALL, s.t1.duration);
     else if (s.t1.enable_pump1 && !s.t1.enable_pump2)
-        pumps_start(PUMP_1);
+        pumps_start(PUMP_1, s.t1.duration);
     else if (!s.t1.enable_pump1 && s.t1.enable_pump2)
-        pumps_start(PUMP_2);
+        pumps_start(PUMP_2, s.t1.duration);
 }
 
 void schedule_init(void)
@@ -120,7 +120,7 @@ void schedule_init(void)
     }
 }
 
-void schedule_configure(int index, uint8_t hour, uint8_t min, uint8_t sec, enum pump_t pumps)
+void schedule_configure(int index, uint8_t hour, uint8_t min, uint8_t sec, enum pump_t pumps, uint8_t duration)
 {
     struct schedule_t s;
 
@@ -133,6 +133,9 @@ void schedule_configure(int index, uint8_t hour, uint8_t min, uint8_t sec, enum 
         s.t0.hour = hour;
         s.t0.min = min;
         s.t0.sec = sec;
+        if (duration >= 32)
+            duration = 31;
+        s.t0.duration = duration;
         if (pumps == PUMP_ALL || pumps == PUMP_1)
             s.t0.enable_pump1 = 1;
         if (pumps == PUMP_ALL || pumps == PUMP_2)
@@ -141,6 +144,9 @@ void schedule_configure(int index, uint8_t hour, uint8_t min, uint8_t sec, enum 
         s.t1.hour = hour;
         s.t1.min = min;
         s.t1.sec = sec;
+        if (duration >= 32)
+            duration = 31;
+        s.t1.duration = duration;
         if (pumps == PUMP_ALL || pumps == PUMP_1)
             s.t1.enable_pump1 = 1;
         if (pumps == PUMP_ALL || pumps == PUMP_2)

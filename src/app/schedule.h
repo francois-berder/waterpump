@@ -37,8 +37,9 @@ void schedule_init(void);
  * @param[in] min in range 0..59
  * @param[in] sec in range 0..59
  * @param[in] pumps
+ * @param[in] duration in second
  */
-void schedule_configure(int index, uint8_t hour, uint8_t min, uint8_t sec, enum pump_t pumps);
+void schedule_configure(int index, uint8_t hour, uint8_t min, uint8_t sec, enum pump_t pumps, uint8_t duration);
 
 /**
  * @brief Enable schedule

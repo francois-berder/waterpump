@@ -20,6 +20,8 @@
 #ifndef PUMPS_H
 #define PUMPS_H
 
+#include <stdint.h>
+
 enum pump_t {
     PUMP_1 = 1,
     PUMP_2 = 2,
@@ -27,10 +29,11 @@ enum pump_t {
 };
 
 /**
- * @brief Switch on pumps for 5 seconds
+ * @brief Switch on pumps
  *
  * @param[in] pumps
+ * @param[in] duration in seconds
  */
-void pumps_start(enum pump_t pumps);
+void pumps_start(enum pump_t pumps, uint8_t duration);
 
 #endif

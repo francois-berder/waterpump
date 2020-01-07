@@ -32,6 +32,7 @@
 #define SIMCARD_PIN     (1234)
 
 #define GSM_ERROR_COUNTER_THRESHOLD     (10)
+#define DEFAULT_PUMP_DURATION           (3)
 
 static struct sim800l_params_t gsm_params = {
     .dev = USART2,
@@ -43,7 +44,7 @@ static char req_schedule_number[22];
 /* push button req water callback */
 void ext5_callback(void)
 {
-    pumps_start(PUMP_ALL);
+    pumps_start(PUMP_ALL, DEFAULT_PUMP_DURATION);
 }
 
 static void handle_sms(struct sim800l_sms_t *sms)
@@ -52,11 +53,11 @@ static void handle_sms(struct sim800l_sms_t *sms)
         return;
 
     if (sms->text_length >= 11 && !strncmp(sms->text, "WATER ALL\r\n", 11))
-        pumps_start(PUMP_ALL);
+        pumps_start(PUMP_ALL, DEFAULT_PUMP_DURATION);
     else if (!strncmp(sms->text, "WATER 1\r\n", 9))
-        pumps_start(PUMP_1);
+        pumps_start(PUMP_1, DEFAULT_PUMP_DURATION);
     else if (!strncmp(sms->text, "WATER 2\r\n", 9))
-        pumps_start(PUMP_2);
+        pumps_start(PUMP_2, DEFAULT_PUMP_DURATION);
     else if (!strncmp(sms->text, "SCHEDULE 0 STOP\r\n", 17))
         schedule_disable(0);
     else if (!strncmp(sms->text, "SCHEDULE 1 STOP\r\n", 17))
@@ -107,7 +108,7 @@ static void handle_sms(struct sim800l_sms_t *sms)
         else
             return;
 
-        schedule_configure(index, hour, min, sec, pumps);
+        schedule_configure(index, hour, min, sec, pumps, DEFAULT_PUMP_DURATION);
     }
 }
 
