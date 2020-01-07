@@ -214,57 +214,60 @@ void schedule_to_string(char *dst)
         char *tmp;
         /* Schedule 0 */
         strcat(dst, "0: ");
-        if (s.t0.in_use)
-            strcat(dst, "ON ");
-        else
+        if (!s.t0.in_use) {
             strcat(dst, "OFF ");
+        } else {
+            strcat(dst, "ON ");
 
-        if (s.t0.enable_pump1 && s.t0.enable_pump2)
-            strcat(dst, "PUMP 1 & 2 ");
-        if (s.t0.enable_pump1 && !s.t0.enable_pump2)
-            strcat(dst, "PUMP 1 ");
-        if (!s.t0.enable_pump1 && s.t0.enable_pump2)
-            strcat(dst, "PUMP 2 ");
+            if (s.t0.enable_pump1 && s.t0.enable_pump2)
+                strcat(dst, "PUMP 1 & 2 ");
+            if (s.t0.enable_pump1 && !s.t0.enable_pump2)
+                strcat(dst, "PUMP 1 ");
+            if (!s.t0.enable_pump1 && s.t0.enable_pump2)
+                strcat(dst, "PUMP 2 ");
 
-        tmp = &dst[strlen(dst)];
-        *tmp++ = '0' + s.t0.hour / 10;
-        *tmp++ = '0' + s.t0.hour % 10;
-        *tmp++ = ':';
-        *tmp++ = '0' + s.t0.min / 10;
-        *tmp++ = '0' + s.t0.min % 10;
-        *tmp++ = ':';
-        *tmp++ = '0' + s.t0.sec / 10;
-        *tmp++ = '0' + s.t0.sec % 10;
-        *tmp++ = '\0';
+            tmp = &dst[strlen(dst)];
+            *tmp++ = '0' + s.t0.hour / 10;
+            *tmp++ = '0' + s.t0.hour % 10;
+            *tmp++ = ':';
+            *tmp++ = '0' + s.t0.min / 10;
+            *tmp++ = '0' + s.t0.min % 10;
+            *tmp++ = ':';
+            *tmp++ = '0' + s.t0.sec / 10;
+            *tmp++ = '0' + s.t0.sec % 10;
+            *tmp++ = '\0';
 
-        strcat(dst, "\r\n");
+            strcat(dst, "\r\n");
+        }
+
         strcat(dst, "\r\n");
 
         /* Schedule 1 */
         strcat(dst, "1: ");
-        if (s.t1.in_use)
-            strcat(dst, "ON ");
-        else
+        if (!s.t1.in_use)
             strcat(dst, "OFF ");
+        else {
+            strcat(dst, "ON ");
 
-        if (s.t1.enable_pump1 && s.t1.enable_pump2)
-            strcat(dst, "PUMP 1 & 2 ");
-        if (s.t1.enable_pump1 && !s.t1.enable_pump2)
-            strcat(dst, "PUMP 1 ");
-        if (!s.t1.enable_pump1 && s.t1.enable_pump2)
-            strcat(dst, "PUMP 2 ");
+            if (s.t1.enable_pump1 && s.t1.enable_pump2)
+                strcat(dst, "PUMP 1 & 2 ");
+            if (s.t1.enable_pump1 && !s.t1.enable_pump2)
+                strcat(dst, "PUMP 1 ");
+            if (!s.t1.enable_pump1 && s.t1.enable_pump2)
+                strcat(dst, "PUMP 2 ");
 
-        tmp = &dst[strlen(dst)];
-        *tmp++ = '0' + s.t1.hour / 10;
-        *tmp++ = '0' + s.t1.hour % 10;
-        *tmp++ = ':';
-        *tmp++ = '0' + s.t1.min / 10;
-        *tmp++ = '0' + s.t1.min % 10;
-        *tmp++ = ':';
-        *tmp++ = '0' + s.t1.sec / 10;
-        *tmp++ = '0' + s.t1.sec % 10;
-        *tmp++ = '\0';
+            tmp = &dst[strlen(dst)];
+            *tmp++ = '0' + s.t1.hour / 10;
+            *tmp++ = '0' + s.t1.hour % 10;
+            *tmp++ = ':';
+            *tmp++ = '0' + s.t1.min / 10;
+            *tmp++ = '0' + s.t1.min % 10;
+            *tmp++ = ':';
+            *tmp++ = '0' + s.t1.sec / 10;
+            *tmp++ = '0' + s.t1.sec % 10;
+            *tmp++ = '\0';
 
-        strcat(dst, "\r\n");
+            strcat(dst, "\r\n");
+        }
     }
 }
