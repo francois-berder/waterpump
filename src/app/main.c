@@ -29,7 +29,9 @@
 #include <ctype.h>
 #include <string.h>
 
+#ifndef SIMCARD_PIN
 #define SIMCARD_PIN     (1234)
+#endif
 
 #define GSM_ERROR_COUNTER_THRESHOLD     (10)
 #define DEFAULT_PUMP_DURATION           (3)
