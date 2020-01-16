@@ -27,6 +27,7 @@
 #include "mcu/stm32l051xx.h"
 #include "mcu/uart.h"
 #include <ctype.h>
+#include <stdlib.h>
 #include <string.h>
 
 #ifndef SIMCARD_PIN
@@ -117,6 +118,31 @@ static void handle_sms(struct sim800l_sms_t *sms)
     }
 }
 
+static void sync_rtc_with_sim800(void)
+{
+    uint64_t now;
+    if (!sim800l_get_time(&gsm_params, &now)) {
+        union rtc_time_t t;
+        t.asUint64 = now;
+        rtc_set_time(t);
+    }
+}
+
+/**
+ * @param[in] hour in BCD format
+ * @param[in] min in BCD format
+ * @param[in] sec in BCD format
+ */
+static uint32_t convert_to_sec(uint8_t hour, uint8_t min, uint8_t sec)
+{
+    return (hour >> 4) * 10 * 60 * 60
+         + (hour & 0xF) * 60 * 60
+         + (min >> 4) * 10 * 60
+         + (min & 0xF) * 60
+         + (sec >> 4) * 10
+         + (sec & 0xF);
+}
+
 static void init_clocks(void)
 {
     /* Enable HSI clock */
@@ -198,6 +224,120 @@ static int gsm_update(void)
     return 0;
 }
 
+/**
+ * @brief Find prescaler A and S given target prescaler
+ *
+ * target_prescaler = (a + 1) * (s + 1)
+ *
+ * @param[in] target_prescaler
+ */
+static void apply_rtc_prescaler(uint32_t target_prescaler)
+{
+    uint32_t best_a, best_s;
+    uint32_t best_error;
+    uint8_t a;
+
+    /*
+     * RTC_PRESCALER = (Prescaler_A + 1) * (Prescaler_S + 1)
+     * Prescaler A: 0-127
+     * Prescaler S: 0-32767
+     */
+
+    best_a = 0x7F;
+    best_s = 0xFF;
+    best_error = abs(target_prescaler - (best_a + 1) * (best_s + 1));
+
+    a = 0x80;
+    while (a--) {
+        uint32_t s;
+        uint32_t error;
+        s = (target_prescaler / (a + 1)) - 1;
+
+        /* No need to continue, s is only going to increase */
+        if (s > 32767)
+            break;
+
+        error = abs(target_prescaler - (a + 1) * (s + 1));
+        if (error < best_error) {
+            best_a = a;
+            best_s = s;
+            best_error = error;
+        }
+
+        if (error == 0)
+            break;
+    }
+
+    rtc_set_prescaler(best_a, best_s);
+}
+
+/**
+ * @brief Calibrate RTC clock
+ *
+ * Unfortunately, the LSI clock is very imprecise, so we need
+ * to find the right RTC prescalers to make sure that the RTC
+ * runs at a correct speed.
+ */
+static int calibrate_rtc_clock(void)
+{
+    union rtc_time_t rtc_start;
+    union rtc_time_t rtc_end;
+    uint32_t sim800_start;
+    uint32_t start, end;
+    int32_t elapsed_time;
+    uint64_t now;
+    uint32_t target_prescaler;
+    int32_t sim800_elapsed_time;
+
+calibration_start:
+
+    rtc_get_time(&rtc_start);
+    if (sim800l_get_time(&gsm_params, &now))
+        return -1;
+    sim800_start = convert_to_sec(now >> 16, now >> 8, now & 0xFF);
+
+    /* Wait for 60 seconds */
+    while(1) {
+        uint32_t tmp;
+
+        if (sim800l_get_time(&gsm_params, &now))
+            return -1;
+
+        tmp = convert_to_sec(now >> 16, now >> 8, now & 0xFF);
+        sim800_elapsed_time = tmp - sim800_start;
+
+        /* New day, need to restart calibration */
+        if (sim800_elapsed_time < 0)
+            goto calibration_start;
+
+        if (sim800_elapsed_time >= 60)
+            break;
+
+        mcu_delay(100);
+    }
+    rtc_get_time(&rtc_end);
+
+    start = convert_to_sec(rtc_start.hour, rtc_start.min, rtc_start.sec);
+    end = convert_to_sec(rtc_end.hour, rtc_end.min, rtc_end.sec);
+    elapsed_time = end - start;
+
+    /* New day, need to restart calibration */
+    if (elapsed_time < 0)
+        goto calibration_start;
+
+    /*
+     * Now we need to change prescalers such that RTC goes as fast as SIM800.
+     */
+    target_prescaler = (32768 * elapsed_time) / sim800_elapsed_time;
+
+    if (target_prescaler > ((RTC_PRESCALER_A_MAX + 1) * (RTC_PRESCALER_S_MAX + 1)))
+        return -1;
+
+    apply_rtc_prescaler(target_prescaler);
+
+    return 0;
+}
+
 int main(void)
 {
     int gsm_enabled = 0;
@@ -229,9 +369,6 @@ int main(void)
     NVIC_EnableIRQ(RTC_IRQn);
     __enable_irq();
 
-    /* Initialize RTC */
-    rtc_init();
-
     /*
      * Ensure that RTC is initialized with a correct time
      * before initializing schedule.
@@ -251,13 +388,10 @@ int main(void)
 
         /* Use 2G network to set time */
         if (gsm_enabled) {
-            uint64_t now;
-
-            if (!sim800l_sync_time(&gsm_params)
-            &&  !sim800l_get_time(&gsm_params, &now)) {
-                union rtc_time_t t;
-                t.asUint64 = now;
-                rtc_set_time(t);
+            /* Quit loop, once RTC calibration was successful */
+            rtc_init();
+            if (!calibrate_rtc_clock()) {
+                sync_rtc_with_sim800();
                 break;
             }
         }
