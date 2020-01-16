@@ -58,6 +58,13 @@ void rtc_init(void);
 void rtc_set_time(union rtc_time_t t);
 
 /**
+ * @brief Get time
+ *
+ * @param[out] t
+ */
+void rtc_get_time(union rtc_time_t *t);
+
+/**
  * @brief Set alarm
  *
  * @param[in] index

@@ -81,6 +81,13 @@ void rtc_set_time(union rtc_time_t t)
     while (!(RTC->ISR & RTC_ISR_RSF));
 }
 
+void rtc_get_time(union rtc_time_t *t)
+{
+    rtc_unlock();
+    t->asUint64 = (RTC->DR & 0xFF1F3F) | (RTC->TR & 0x7F7F7F);
+    rtc_lock();
+}
+
 void rtc_set_alarm(enum rtc_alarm_t index, uint8_t hour, uint8_t min, uint8_t sec, rtc_alarm_cb_t cb)
 {
     if (index >= RTC_ALARM_COUNT)
