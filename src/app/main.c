@@ -229,29 +229,43 @@ int main(void)
     NVIC_EnableIRQ(RTC_IRQn);
     __enable_irq();
 
-    /* Initialize SIM800 module */
-    gsm_enabled = 1;
-    gpio_write(ENABLE_GSM_PIN, 1);
-    mcu_delay(5000);
-
-    if (gsm_init()) {
-        gpio_write(ENABLE_GSM_PIN, 0);
-        gsm_enabled = 0;
-    }
-
     /* Initialize RTC */
     rtc_init();
 
-    /* Use 2G network to set time */
-    if (gsm_enabled) {
-        uint64_t now;
+    /*
+     * Ensure that RTC is initialized with a correct time
+     * before initializing schedule.
+     */
+    while (1) {
+        /* 1. Power up 2G module */
+        gpio_write(ENABLE_GSM_PIN, 1);
+        gsm_enabled = 1;
 
-        if (!sim800l_sync_time(&gsm_params)
-        &&  !sim800l_get_time(&gsm_params, &now)) {
-            union rtc_time_t t;
-            t.asUint64 = now;
-            rtc_set_time(t);
+        mcu_delay(5000);
+
+        /* Initialize SIM800 module */
+        if (gsm_init()) {
+            gpio_write(ENABLE_GSM_PIN, 0);
+            gsm_enabled = 0;
         }
+
+        /* Use 2G network to set time */
+        if (gsm_enabled) {
+            uint64_t now;
+
+            if (!sim800l_sync_time(&gsm_params)
+            &&  !sim800l_get_time(&gsm_params, &now)) {
+                union rtc_time_t t;
+                t.asUint64 = now;
+                rtc_set_time(t);
+                break;
+            }
+        }
+
+        /* Power down 2G module for a little while */
+        gpio_write(ENABLE_GSM_PIN, 0);
+        gsm_enabled = 0;
+        mcu_delay(10000);
     }
 
     schedule_init();
