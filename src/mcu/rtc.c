@@ -21,6 +21,9 @@
 #include "mcu/stm32l051xx.h"
 #include <stdint.h>
 
+#define DEFAULT_PRESCALER_A     (127)
+#define DEFAULT_PRESCALER_S     (255)
+
 static rtc_alarm_cb_t callbacks[RTC_ALARM_COUNT];
 
 static void rtc_unlock(void)
@@ -68,6 +71,7 @@ void rtc_init(void)
     RTC->CR = 0;
     RTC->TR = 0;
     RTC->DR = 0;
+    RTC->PRER = (DEFAULT_PRESCALER_A << RTC_PRER_PREDIV_A_Pos) | (DEFAULT_PRESCALER_S << RTC_PRER_PREDIV_S_Pos);
     rtc_lock();
 }
 
