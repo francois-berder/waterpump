@@ -340,8 +340,6 @@ int sim800l_unlock_sim(struct sim800l_params_t *params, uint32_t pin)
 {
     char cmd[15] = "AT+CPIN=XXXX\r\n";
 
-    /* @todo Check that we actually need to provide PIN code */
-
     cmd[8] = '0' + ((pin / 1000) % 10);
     cmd[9] = '0' + ((pin / 100) % 10);
     cmd[10] = '0' + ((pin / 10) % 10);
