@@ -71,6 +71,14 @@ void rtc_init(void)
     rtc_lock();
 }
 
+void rtc_set_prescaler(uint8_t a, uint16_t s)
+{
+    rtc_unlock();
+    RTC->PRER = ((a << RTC_PRER_PREDIV_A_Pos) & RTC_PRER_PREDIV_A)
+              | ((s << RTC_PRER_PREDIV_S_Pos) & RTC_PRER_PREDIV_S);
+    rtc_lock();
+}
+
 void rtc_set_time(union rtc_time_t t)
 {
     rtc_unlock();

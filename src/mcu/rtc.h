@@ -22,6 +22,9 @@
 
 #include <stdint.h>
 
+#define RTC_PRESCALER_A_MAX     (127)
+#define RTC_PRESCALER_S_MAX     (32767)
+
 union rtc_time_t {
     struct {
         /* All elements are in BCD */
@@ -49,6 +52,17 @@ typedef void(*rtc_alarm_cb_t)(void);
  * @brief Initialize RTC module
  */
 void rtc_init(void);
+
+/**
+ * @brief Set RTC prescaler A and S
+ *
+ * RTCCLK / ((a + 1) * (s + 1)) defines the length of a second
+ * where RTCCLK = LSI|LSE|HSE
+ *
+ * @param[in] a
+ * @param[in] s
+ */
+void rtc_set_prescaler(uint8_t a, uint16_t s);
 
 /**
  * @brief Set time
