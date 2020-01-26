@@ -50,7 +50,6 @@ In `hardware` folder, there are Gerber files sent to [JLCPCB](https://jlcpcb.com
 
   * SIM800L footprint is still incorrect ! Although it is easier to insert the module in pin headers than on rev1.
   * micro USB connector should be replaced by a barrel connector because USB cables should not be used to provide 3A.
-  * The LSI clock is extremely unprecise. A calibration routine is run upon boot to mitigate this issue but do not expect pumps to be enabled exactly at the time requested. Ideally, an external 32.768kHz oscillator should be used.
 
 ## Power requirements
 

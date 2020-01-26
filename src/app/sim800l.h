@@ -23,6 +23,8 @@
 #include "mcu/stm32l051xx.h"
 #include <stdint.h>
 
+#define SIM800L_ALARM_COUNT     (5)
+
 struct sim800l_params_t {
     USART_TypeDef *dev;
 };

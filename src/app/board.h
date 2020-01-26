@@ -20,6 +20,7 @@
 #ifndef BOARD_H
 #define BOARD_H
 
+#include "app/sim800l.h"
 #include "mcu/gpio.h"
 
 #define ENABLE_GSM_PIN      (GPIO_PIN(PORT_A, 0))
@@ -39,5 +40,7 @@
 #define MCU_TIM21_EN    /* Used by SIM800 module */
 #define MCU_TIM22_EN    /* Used by status module */
 #define MCU_UART_EN
+
+#define SIM800_USART        (USART2)
 
 #endif

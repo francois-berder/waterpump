@@ -20,7 +20,10 @@
 #ifndef SCHEDULE_H
 #define SCHEDULE_H
 
+#include "sim800l.h"
 #include <stdint.h>
+
+#define SCHEDULE_COUNT      (SIM800L_ALARM_COUNT)
 
 /**
  * @brief Apply configuration saved in EEPROM
@@ -32,7 +35,7 @@ void schedule_init(void);
  *
  * This enables the schedule.
  *
- * @param[in] index Must be 0 or 1
+ * @param[in] index Must be less than SCHEDULE_COUNT
  * @param[in] hour in range 0..23
  * @param[in] min in range 0..59
  * @param[in] sec in range 0..59
@@ -44,14 +47,14 @@ void schedule_configure(int index, uint8_t hour, uint8_t min, uint8_t sec, enum 
 /**
  * @brief Enable schedule
  *
- * @param[in] index Must be 0 or 1
+ * @param[in] index Must be less than SCHEDULE_COUNT
  */
 void schedule_enable(int index);
 
 /**
  * @brief Disable schedule
  *
- * @param[in] index Must be 0 or 1
+ * @param[in] index Must be less than SCHEDULE_COUNT
  */
 void schedule_disable(int index);
 
