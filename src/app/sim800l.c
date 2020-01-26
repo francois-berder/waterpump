@@ -33,8 +33,6 @@
 #define LINE_COUNT          (4)
 #define MAX_LINE_LENGTH     (256)
 
-#define MAX_SIM800_ALARM    (5)
-
 /* Position of fields in sms header time variable */
 #define YEAR_DEC_POS    (44)
 #define YEAR_DIGIT_POS  (40)
@@ -110,7 +108,7 @@ static sim800l_receive_sms_callback_t sms_receive_cb;
 static struct sim800l_sms_t sms;
 static bool parsing_sms;        /**< Keep track whether we received some parts of a SMS */
 
-static sim800l_alarm_cb_t alarm_callbacks[MAX_SIM800_ALARM];
+static sim800l_alarm_cb_t alarm_callbacks[SIM800L_ALARM_COUNT];
 
 static void parse_sms_header(char *buffer)
 {
@@ -551,7 +549,7 @@ int sim800l_delete_alarm(struct sim800l_params_t *params, uint8_t alarm_index)
 {
     char cmd[16];
 
-    if (alarm_index == 0 || alarm_index > MAX_SIM800_ALARM)
+    if (alarm_index == 0 || alarm_index > SIM800L_ALARM_COUNT)
         return -1;
 
     strcpy(cmd, "AT+CALD=X\r\n");
@@ -571,7 +569,7 @@ int sim800l_set_alarm(struct sim800l_params_t *params, uint8_t alarm_index,
 {
     char cmd[32];
 
-    if (alarm_index == 0 || alarm_index > MAX_SIM800_ALARM)
+    if (alarm_index == 0 || alarm_index > SIM800L_ALARM_COUNT)
         return -1;
 
     strcpy(cmd, "AT+CALA=\"hh:mm:ss\",X,0\r\n");
