@@ -55,6 +55,8 @@ struct sim800l_sms_t {
 
 typedef void(*sim800l_receive_sms_callback_t)(struct sim800l_sms_t *);
 
+typedef void(*sim800l_alarm_cb_t)(uint8_t);
+
 void sim800l_receive_cb(char c);
 
 /**
@@ -193,5 +195,34 @@ int sim800l_get_time(struct sim800l_params_t *params, uint64_t *time);
  * @brief Synchronize SIM800 time with network time
  */
 int sim800l_sync_time(struct sim800l_params_t *params);
+
+/**
+ * @brief Delete alarm
+ *
+ * @param[in] params
+ * @param[in] alarm_index must be in range 1..5
+ * @return 0 if successful, -1 otherwise
+ */
+int sim800l_delete_alarm(struct sim800l_params_t *params, uint8_t alarm_index);
+
+/**
+ * @brief Set alarm
+ *
+ * Note that if you want to change the time of an alarm, you must first
+ * delete it.
+ *
+ * The alarm will trigger every day.
+ *
+ * @param[in] params
+ * @param[in] alarm_index must be in range 1..5
+ * @param[in] hour in BCD format
+ * @param[in] min in BCD format
+ * @param[in] sec in BCD format
+ * @param[in] cb
+ * @return 0 if successful, -1 otherwise
+ */
+int sim800l_set_alarm(struct sim800l_params_t *params, uint8_t alarm_index,
+                      uint8_t hour, uint8_t min, uint8_t sec,
+                      sim800l_alarm_cb_t cb);
 
 #endif

@@ -33,6 +33,8 @@
 #define LINE_COUNT          (4)
 #define MAX_LINE_LENGTH     (256)
 
+#define MAX_SIM800_ALARM    (5)
+
 /* Position of fields in sms header time variable */
 #define YEAR_DEC_POS    (44)
 #define YEAR_DIGIT_POS  (40)
@@ -72,6 +74,8 @@ enum cmd_t {
     CMD_ENABLE_TIME,
     CMD_GET_TIME,
     CMD_SYNC_TIME,
+    CMD_DELETE_ALARM,
+    CMD_SET_ALARM,
 };
 static enum cmd_t current_cmd;
 
@@ -105,6 +109,8 @@ static union cmd_result_t result;
 static sim800l_receive_sms_callback_t sms_receive_cb;
 static struct sim800l_sms_t sms;
 static bool parsing_sms;        /**< Keep track whether we received some parts of a SMS */
+
+static sim800l_alarm_cb_t alarm_callbacks[MAX_SIM800_ALARM];
 
 static void parse_sms_header(char *buffer)
 {
@@ -165,9 +171,6 @@ void sim800l_receive_cb(char c)
 {
     int length;
 
-    if (status != CMD_STATUS_ONGOING)
-        return;
-
     length = lines[line_write_index].length;
     lines[line_write_index].line[length] = c;
     length++;
@@ -177,18 +180,29 @@ void sim800l_receive_cb(char c)
         status = CMD_STATUS_LINE_TOO_LONG;
     } else if (c == '\n') {
         lines[line_write_index].line[length] = '\0';
-        lines[line_write_index].ready_for_processing = 1;
 
-        line_available_count++;
+        if (status == CMD_STATUS_ONGOING) {
+            lines[line_write_index].ready_for_processing = 1;
 
-        /* Start using next line */
-        line_write_index++;
-        if (line_write_index == LINE_COUNT)
-            line_write_index = 0;
+            line_available_count++;
 
-        /* Was it processed ? */
-        if (lines[line_write_index].ready_for_processing)
-            status = CMD_STATUS_LINE_OVERRUN;
+            /* Start using next line */
+            line_write_index++;
+            if (line_write_index == LINE_COUNT)
+                line_write_index = 0;
+
+            /* Was it processed ? */
+            if (lines[line_write_index].ready_for_processing)
+                status = CMD_STATUS_LINE_OVERRUN;
+        } else {
+            lines[line_write_index].length = 0;
+            if (!strncmp(lines[line_write_index].line, "+CALV: ", 7)) {
+                uint8_t alarm_index = lines[line_write_index].line[7] - '0';
+                sim800l_alarm_cb_t cb = alarm_callbacks[alarm_index];
+                if (cb)
+                    cb(alarm_index);
+            }
+        }
     }
 }
 
@@ -531,4 +545,52 @@ int sim800l_sync_time(struct sim800l_params_t *params)
     wait_for_cmd_completion();
 
     return (status == CMD_STATUS_OK && sync_time_done) ? 0 : -1;
+}
+
+int sim800l_delete_alarm(struct sim800l_params_t *params, uint8_t alarm_index)
+{
+    char cmd[16];
+
+    if (alarm_index == 0 || alarm_index > MAX_SIM800_ALARM)
+        return -1;
+
+    strcpy(cmd, "AT+CALD=X\r\n");
+    cmd[8] = '0' + alarm_index;
+
+    uart_send(params->dev, cmd, 11);
+    current_cmd = CMD_DELETE_ALARM;
+    time_remaining = 500;
+    wait_for_cmd_completion();
+
+    return status == CMD_STATUS_OK ? 0 : -1;
+}
+
+int sim800l_set_alarm(struct sim800l_params_t *params, uint8_t alarm_index,
+                      uint8_t hour, uint8_t min, uint8_t sec,
+                      sim800l_alarm_cb_t cb)
+{
+    char cmd[32];
+
+    if (alarm_index == 0 || alarm_index > MAX_SIM800_ALARM)
+        return -1;
+
+    strcpy(cmd, "AT+CALA=\"hh:mm:ss\",X,0\r\n");
+    cmd[9] = '0' + ((hour >> 4) & 0xF);
+    cmd[10] = '0' + (hour & 0xF);
+    cmd[12] = '0' + ((min >> 4) & 0xF);
+    cmd[13] = '0' + (min & 0xF);
+    cmd[15] = '0' + ((sec >> 4) & 0xF);
+    cmd[16] = '0' + (sec & 0xF);
+
+    cmd[19] = '0' + alarm_index;
+    uart_send(params->dev, cmd, strlen(cmd));
+    current_cmd = CMD_SET_ALARM;
+    time_remaining = 500;
+    wait_for_cmd_completion();
+
+    if (status != CMD_STATUS_OK)
+        return - 1;
+
+    alarm_callbacks[alarm_index] = cb;
+    return 0;
 }
