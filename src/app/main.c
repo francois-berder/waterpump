@@ -215,6 +215,11 @@ int main(void)
     /* Set core clock to 4.2MHz */
     RCC->ICSCR = (RCC->ICSCR & ~RCC_ICSCR_MSIRANGE) | RCC_ICSCR_MSIRANGE_6;
 
+    /* Set Vcore to 1.2V */
+    RCC->APB1ENR |= RCC_APB1ENR_PWREN;
+    PWR->CR |= PWR_CR_VOS_0 | PWR_CR_VOS_1;
+    while (PWR->CSR & PWR_CSR_VOSF);
+
     /* Initialize GPIOs */
     gpio_init_out(LED_PIN, 1);
     gpio_init_out(ENABLE_GSM_PIN, 0);
