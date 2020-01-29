@@ -59,6 +59,11 @@ void schedule_enable(int index);
 void schedule_disable(int index);
 
 /**
+ * @brief Configure SIM800L alarms
+ */
+void schedule_apply_configuration(void);
+
+/**
  * @brief Print schedule status
  * 
  * @param[out] dst

@@ -58,23 +58,27 @@ static int is_schedule_valid(struct schedule_t *s)
     return s->magic0 == SCHEDULE_MAGIC0 && s->magic1 == SCHEDULE_MAGIC1;
 }
 
-void alarm_callback(uint8_t index)
+void alarm_callback(uint8_t sim800l_alarm_index)
 {
+    uint8_t index = sim800l_alarm_index - 1;
     struct schedule_t s;
+
+    if (index >= SIM800L_ALARM_COUNT)
+        return;
 
     eeprom_read((uint32_t)&schedule, &s, sizeof(s));
     if (!is_schedule_valid(&s))
         return;
 
-    if (!schedule.alarms[index].enabled || !schedule.alarms[index].duration)
+    if (!s.alarms[index].enabled || !s.alarms[index].duration)
         return;
 
-    if (schedule.alarms[index].enable_pump1 && !schedule.alarms[index].enable_pump2)
-        pumps_start(PUMP_1, schedule.alarms[index].duration);
-    if (!schedule.alarms[index].enable_pump1 && schedule.alarms[index].enable_pump2)
-        pumps_start(PUMP_2, schedule.alarms[index].duration);
-    if (schedule.alarms[index].enable_pump1 && schedule.alarms[index].enable_pump2)
-        pumps_start(PUMP_ALL, schedule.alarms[index].duration);
+    if (s.alarms[index].enable_pump1 && !s.alarms[index].enable_pump2)
+        pumps_start(PUMP_1, s.alarms[index].duration);
+    if (!s.alarms[index].enable_pump1 && s.alarms[index].enable_pump2)
+        pumps_start(PUMP_2, s.alarms[index].duration);
+    if (s.alarms[index].enable_pump1 && s.alarms[index].enable_pump2)
+        pumps_start(PUMP_ALL, s.alarms[index].duration);
 }
 
 void schedule_init(void)
@@ -93,11 +97,6 @@ void schedule_init(void)
         s.magic0 = SCHEDULE_MAGIC0;
         s.magic1 = SCHEDULE_MAGIC1;
         eeprom_write((uint32_t)&schedule, &s, sizeof(s));
-    } else {
-        for (i = 0; i < SIM800L_ALARM_COUNT; ++i) {
-            if (schedule.alarms[i].enabled)
-                schedule_enable(i);
-        }
     }
 }
 
@@ -105,7 +104,7 @@ void schedule_configure(int index, uint8_t hour, uint8_t min, uint8_t sec, enum 
 {
     struct schedule_t s;
 
-    if (index < SCHEDULE_COUNT)
+    if (index >= SCHEDULE_COUNT)
         return;
 
     /* Store new schedule in EEPROM */
@@ -113,12 +112,12 @@ void schedule_configure(int index, uint8_t hour, uint8_t min, uint8_t sec, enum 
     if (!is_schedule_valid(&s))
         return;
 
-    schedule.alarms[index].hour = hour;
-    schedule.alarms[index].min = min;
-    schedule.alarms[index].sec = sec;
-    schedule.alarms[index].enable_pump1 = (pumps & PUMP_1);
-    schedule.alarms[index].enable_pump2 = (pumps & PUMP_2);
-    schedule.alarms[index].duration = duration;
+    s.alarms[index].hour = hour;
+    s.alarms[index].min = min;
+    s.alarms[index].sec = sec;
+    s.alarms[index].enable_pump1 = (pumps & PUMP_1);
+    s.alarms[index].enable_pump2 = (pumps & PUMP_2);
+    s.alarms[index].duration = duration;
     eeprom_write((uint32_t)&schedule, &s, sizeof(s));
 
     schedule_enable(index);
@@ -127,52 +126,66 @@ void schedule_configure(int index, uint8_t hour, uint8_t min, uint8_t sec, enum 
 void schedule_enable(int index)
 {
     struct schedule_t s;
-    uint8_t hour, min, sec;
 
-    if (index < SCHEDULE_COUNT)
+    if (index >= SCHEDULE_COUNT)
         return;
 
     /* Store new schedule in EEPROM */
     eeprom_read((uint32_t)&schedule, &s, sizeof(s));
     if (!is_schedule_valid(&s))
         return;
-    schedule.alarms[index].enabled = 1;
+    s.alarms[index].enabled = 1;
     eeprom_write((uint32_t)&schedule, &s, sizeof(s));
-
-    sim800l_delete_alarm(&gsm_params, 1 + index);
-
-    /* Convert hour, min, sec to BCD format */
-    hour = (schedule.alarms[index].hour / 10) << 4;
-    hour |= schedule.alarms[index].hour % 10;
-    min = (schedule.alarms[index].min / 10) << 4;
-    min |= schedule.alarms[index].min % 10;
-    sec = (schedule.alarms[index].sec / 10) << 4;
-    sec |= schedule.alarms[index].sec % 10;
-
-    sim800l_set_alarm(&gsm_params, 1 + index, hour, min, sec, alarm_callback);
 }
 
 void schedule_disable(int index)
 {
     struct schedule_t s;
 
-    if (index < SCHEDULE_COUNT)
+    if (index >= SCHEDULE_COUNT)
         return;
 
     /* Store new schedule in EEPROM */
     eeprom_read((uint32_t)&schedule, &s, sizeof(s));
     if (!is_schedule_valid(&s))
         return;
-    schedule.alarms[index].enabled = 0;
+    s.alarms[index].enabled = 0;
     eeprom_write((uint32_t)&schedule, &s, sizeof(s));
+}
 
-    sim800l_delete_alarm(&gsm_params, 1 + index);
+void schedule_apply_configuration(void)
+{
+    struct schedule_t s;
+    int i;
+
+    eeprom_read((uint32_t)&schedule, &s, sizeof(s));
+    if (!is_schedule_valid(&s))
+        return;
+
+    for (i = 0; i < SIM800L_ALARM_COUNT; ++i) {
+        uint8_t hour, min, sec;
+
+        sim800l_delete_alarm(&gsm_params, 1 + i);
+        if (!s.alarms[i].enabled)
+            continue;
+
+        /* Convert hour, min, sec to BCD format */
+        hour = (schedule.alarms[i].hour / 10) << 4;
+        hour |= schedule.alarms[i].hour % 10;
+        min = (schedule.alarms[i].min / 10) << 4;
+        min |= schedule.alarms[i].min % 10;
+        sec = (schedule.alarms[i].sec / 10) << 4;
+        sec |= schedule.alarms[i].sec % 10;
+
+        sim800l_set_alarm(&gsm_params, 1 + i, hour, min, sec, alarm_callback);
+    }
 }
 
 void schedule_to_string(char *dst)
 {
     struct schedule_t s;
     int i;
+    char *tmp;
 
     dst[0] = '\0';
     eeprom_read((uint32_t)&schedule, &s, sizeof(s));
@@ -183,7 +196,8 @@ void schedule_to_string(char *dst)
     }
 
     for (i = 0; i < SIM800L_ALARM_COUNT; ++i) {
-        char *tmp = dst;
+        tmp = &dst[strlen(dst)];
+
         *tmp++ = '0' + i;
         *tmp++ = ':';
         *tmp++ = ' ';
@@ -215,6 +229,9 @@ void schedule_to_string(char *dst)
         if (schedule.alarms[i].duration >= 10)
             *tmp++ = '0' + schedule.alarms[i].duration / 10;
         *tmp++ = '0' + schedule.alarms[i].duration % 10;
+        *tmp++ = 's';
+        *tmp++ = 'e';
+        *tmp++ = 'c';
         *tmp++ = '\0';
 
         strcat(dst, "\r\n");

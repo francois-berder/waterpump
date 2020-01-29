@@ -43,6 +43,7 @@ static struct sim800l_params_t gsm_params = {
     .dev = SIM800_USART,
 };
 static uint32_t gsm_error_counter;
+static int schedule_changed;
 static int req_schedule_status;
 static char req_schedule_number[22];
 
@@ -63,19 +64,32 @@ static void handle_sms(struct sim800l_sms_t *sms)
         pumps_start(PUMP_1, DEFAULT_PUMP_DURATION);
     else if (!strncmp(sms->text, "WATER 2\r\n", 9))
         pumps_start(PUMP_2, DEFAULT_PUMP_DURATION);
-    else if (!strncmp(sms->text, "SCHEDULE 0 STOP\r\n", 17))
+    else if (!strncmp(sms->text, "SCHEDULE 0 STOP\r\n", 17)) {
         schedule_disable(0);
-    else if (!strncmp(sms->text, "SCHEDULE 1 STOP\r\n", 17))
+        schedule_changed = 1;
+    } else if (!strncmp(sms->text, "SCHEDULE 1 STOP\r\n", 17)) {
         schedule_disable(1);
-    else if (!strncmp(sms->text, "SCHEDULE STATUS\r\n", 17)) {
+        schedule_changed = 1;
+    } else if (!strncmp(sms->text, "SCHEDULE 2 STOP\r\n", 17)) {
+        schedule_disable(2);
+        schedule_changed = 1;
+    } else if (!strncmp(sms->text, "SCHEDULE 3 STOP\r\n", 17)) {
+        schedule_disable(3);
+        schedule_changed = 1;
+    } else if (!strncmp(sms->text, "SCHEDULE 4 STOP\r\n", 17)) {
+        schedule_disable(4);
+        schedule_changed = 1;
+    } else if (!strncmp(sms->text, "SCHEDULE STATUS\r\n", 17)) {
         req_schedule_status = 1;
         strcpy(req_schedule_number, sms->header.sender);
     } else if (sms->text_length >= 23 && !strncmp(sms->text, "SCHEDULE ", 9)) {
         uint8_t index;
         uint8_t hour, min, sec;
         enum pump_t pumps;
+        uint8_t duration;
 
         if (!isdigit(sms->text[9])
+        ||  sms->text[10] != ' '
         ||  !isdigit(sms->text[11])
         ||  !isdigit(sms->text[12])
         ||  sms->text[13] != ':'
@@ -83,11 +97,13 @@ static void handle_sms(struct sim800l_sms_t *sms)
         ||  !isdigit(sms->text[15])
         ||  sms->text[16] != ':'
         ||  !isdigit(sms->text[17])
-        ||  !isdigit(sms->text[18]))
+        ||  !isdigit(sms->text[18])
+        ||  sms->text[19] != ' '
+        ||  !isdigit(sms->text[20]))
             return;
 
         index = sms->text[9] - '0';
-        if (index != 0 && index != 1)
+        if (index >= SCHEDULE_COUNT)
             return;
 
         hour = (sms->text[11] - '0') * 10 + (sms->text[12] - '0');
@@ -102,18 +118,24 @@ static void handle_sms(struct sim800l_sms_t *sms)
         if (sec > 59)
             return;
 
-        if (sms->text[20] == '1')
+        duration = (sms->text[20] - '0');
+        if (isdigit(sms->text[21]))
+            duration = (duration * 10) + (sms->text[21] - '0');
+
+        if (sms->text[22] == '1')
             pumps = PUMP_1;
-        else if (sms->text[20] == '2')
+        else if (sms->text[22] == '2')
             pumps = PUMP_2;
-        else if (sms->text[20] == 'A'
-              && sms->text[21] == 'L'
-              && sms->text[22] == 'L')
+        else if (sms->text_length >= 25
+              && sms->text[22] == 'A'
+              && sms->text[23] == 'L'
+              && sms->text[24] == 'L')
             pumps = PUMP_ALL;
         else
             return;
 
-        schedule_configure(index, hour, min, sec, pumps, DEFAULT_PUMP_DURATION);
+        schedule_configure(index, hour, min, sec, pumps, duration);
+        schedule_changed = 1;
     }
 }
 
@@ -271,7 +293,10 @@ int main(void)
                 gsm_enabled = 0;
             }
         } else {
+            if (schedule_changed)
+                schedule_apply_configuration();
             gsm_error_counter = 0;
+            schedule_changed = 0;
         }
     }
 
