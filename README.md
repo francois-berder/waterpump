@@ -67,6 +67,6 @@ Both pumps are switched on in sequence for 3 seconds each if the push button is 
 | `WATER <pump_index>` | Turn on one pump | `WATER 1`, `WATER 2` |
 | `WATER ALL` | Turn on both pumps | `WATER ALL` |
 | `SCHEDULE <index> STOP` | Disable a schedule| `SCHEDULE 0 STOP`, `SCHEDULE 1 STOP` |
-| `SCHEDULE <index> <hour>:<min>:<sec> ALL` | Turn on both pumps once per day | `SCHEDULE 0 19:04:57 ALL` |
-| `SCHEDULE <index> <hour>:<min>:<sec> <pump_index>` | Turn on a pump once per day | `SCHEDULE 1 06:43:00 1` |
+| `SCHEDULE <index> <hour>:<min>:<sec> <duration> ALL` | Turn on both pumps once per day | `SCHEDULE 0 19:04:57 3 ALL` |
+| `SCHEDULE <index> <hour>:<min>:<sec> <duration> <pump_index>` | Turn on a pump once per day | `SCHEDULE 2 06:43:00 7 1`, `SCHEDULE 3 06:43:00 9 2` |
 | `SCHEDULE STATUS` | Request schedule status | `SCHEDULE STATUS` |
