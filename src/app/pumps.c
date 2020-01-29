@@ -45,7 +45,7 @@ static void pumps_stop(void *arg)
         } else if (counter == duration + 1) {
             timer_power_down(TIM2);
             running = false;
-            status_on();
+            status_off();
         }
         break;
     case PUMP_2:
@@ -54,7 +54,7 @@ static void pumps_stop(void *arg)
         } else if (counter == duration + 1) {
             timer_power_down(TIM2);
             running = false;
-            status_on();
+            status_off();
         }
         break;
     case PUMP_ALL:
@@ -67,7 +67,7 @@ static void pumps_stop(void *arg)
         } else if (counter == 2 * (duration + 1)) {
             timer_power_down(TIM2);
             running = false;
-            status_on();
+            status_off();
         }
         break;
     }

@@ -221,7 +221,7 @@ int main(void)
     while (PWR->CSR & PWR_CSR_VOSF);
 
     /* Initialize GPIOs */
-    gpio_init_out(LED_PIN, 1);
+    gpio_init_out(LED_PIN, 0);
     gpio_init_out(ENABLE_GSM_PIN, 0);
     gpio_init_out(ENABLE_PUMP1_PIN, 0);
     gpio_init_out(ENABLE_PUMP2_PIN, 0);

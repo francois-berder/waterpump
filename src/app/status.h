@@ -20,7 +20,7 @@
 #ifndef STATUS_H
 #define STATUS_H
 
-void status_on(void);
+void status_off(void);
 
 void status_blink(void);
 

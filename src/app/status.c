@@ -29,10 +29,10 @@ static void blink_led(void *arg)
     gpio_toggle(LED_PIN);
 }
 
-void status_on(void)
+void status_off(void)
 {
     timer_power_down(TIM22);
-    gpio_write(LED_PIN, 1);
+    gpio_write(LED_PIN, 0);
 }
 
 void status_blink(void)
