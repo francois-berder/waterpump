@@ -31,10 +31,9 @@
 #define GSM_TX_PIN          (GPIO_PIN(PORT_A, 2))
 #define GSM_RX_PIN          (GPIO_PIN(PORT_A, 3))
 
-#define CORE_CLOCK          (16000000)
-#define CLOCK_APB1          (16000000)
-#define CLOCK_APB2          (16000000)
-#define CLOCK_LSI           (38000)
+#define CORE_CLOCK          (4190000)
+#define CLOCK_APB1          (CORE_CLOCK)
+#define CLOCK_APB2          (CORE_CLOCK)
 
 #define MCU_TIM2_EN     /* Used by pumps module */
 #define MCU_TIM21_EN    /* Used by SIM800 module */

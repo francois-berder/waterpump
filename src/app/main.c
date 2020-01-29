@@ -139,18 +139,6 @@ static void handle_sms(struct sim800l_sms_t *sms)
     }
 }
 
-static void init_clocks(void)
-{
-    /* Enable HSI clock */
-    RCC->CR |= RCC_CR_HSION;
-    while (!(RCC->CR & RCC_CR_HSIRDY));
-
-    /* Configure AHB, APB1, APB2 clocks */
-    RCC->CFGR = (RCC_CFGR_SW_HSI | RCC_CFGR_HPRE_DIV1 |
-                 RCC_CFGR_PPRE1_DIV1 | RCC_CFGR_PPRE2_DIV1);
-    while ((RCC->CFGR & RCC_CFGR_SWS) != RCC_CFGR_SWS_HSI);
-}
-
 static int gsm_init(void)
 {
     enum sim800l_sim_status_t sim_status;
@@ -224,7 +212,8 @@ int main(void)
 {
     int gsm_enabled = 0;
 
-    init_clocks();
+    /* Set core clock to 4.2MHz */
+    RCC->ICSCR = (RCC->ICSCR & ~RCC_ICSCR_MSIRANGE) | RCC_ICSCR_MSIRANGE_6;
 
     /* Initialize GPIOs */
     gpio_init_out(LED_PIN, 1);
