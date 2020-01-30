@@ -64,6 +64,7 @@ Both pumps are switched on in sequence for 3 seconds each if the push button is 
 
 | SMS | description | examples |
 | --- | ----------- | ------- |
+| `BUTTON <duration>` | Configure for how long each pump is enabled when button is pressed | `BUTTON 5` |
 | `WATER <pump_index>` | Turn on one pump | `WATER 1`, `WATER 2` |
 | `WATER ALL` | Turn on both pumps | `WATER ALL` |
 | `SCHEDULE <index> STOP` | Disable a schedule| `SCHEDULE 0 STOP`, `SCHEDULE 1 STOP` |
