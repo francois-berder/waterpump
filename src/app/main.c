@@ -47,10 +47,12 @@ static int schedule_changed;
 static int req_schedule_status;
 static char req_schedule_number[22];
 
+static uint8_t pump_duration = DEFAULT_PUMP_DURATION;
+
 /* push button req water callback */
 void ext5_callback(void)
 {
-    pumps_start(PUMP_ALL, DEFAULT_PUMP_DURATION);
+    pumps_start(PUMP_ALL, pump_duration);
 }
 
 static void handle_sms(struct sim800l_sms_t *sms)
@@ -64,7 +66,14 @@ static void handle_sms(struct sim800l_sms_t *sms)
         pumps_start(PUMP_1, DEFAULT_PUMP_DURATION);
     else if (!strncmp(sms->text, "WATER 2\r\n", 9))
         pumps_start(PUMP_2, DEFAULT_PUMP_DURATION);
-    else if (!strncmp(sms->text, "SCHEDULE 0 STOP\r\n", 17)) {
+    else if (!strncmp(sms->text, "BUTTON ", 7)) {
+        if (sms->text_length == 8 && isdigit(sms->text[7]))
+            pump_duration = sms->text[7] - '0';
+        else if (sms->text_length == 9
+             && isdigit(sms->text[7])
+             && isdigit(sms->text[8]))
+            pump_duration = (sms->text[7] - '0') * 10 + (sms->text[8] - '0');
+    } else if (!strncmp(sms->text, "SCHEDULE 0 STOP\r\n", 17)) {
         schedule_disable(0);
         schedule_changed = 1;
     } else if (!strncmp(sms->text, "SCHEDULE 1 STOP\r\n", 17)) {
