@@ -62,7 +62,7 @@ Both pumps are switched on in sequence for 3 seconds each if the push button is 
 
 ## SMS commands
 
-| SMS | description | examples |
+| Command | description | examples |
 | --- | ----------- | ------- |
 | `BUTTON <duration>` | Configure for how long each pump is enabled when button is pressed | `BUTTON 5` |
 | `WATER <pump_index>` | Turn on one pump for `DEFAULT_PUMP_DURATION` seconds (default: 3s) | `WATER 1`, `WATER 2` |
