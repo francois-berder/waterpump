@@ -115,8 +115,8 @@ void schedule_configure(int index, uint8_t hour, uint8_t min, uint8_t sec, enum 
     s.alarms[index].hour = hour;
     s.alarms[index].min = min;
     s.alarms[index].sec = sec;
-    s.alarms[index].enable_pump1 = (pumps & PUMP_1);
-    s.alarms[index].enable_pump2 = (pumps & PUMP_2);
+    s.alarms[index].enable_pump1 = !!(pumps & PUMP_1);
+    s.alarms[index].enable_pump2 = !!(pumps & PUMP_2);
     s.alarms[index].duration = duration;
     eeprom_write((uint32_t)&schedule, &s, sizeof(s));
 
