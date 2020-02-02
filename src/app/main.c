@@ -105,6 +105,7 @@ static void handle_sms(struct sim800l_sms_t *sms)
         uint8_t hour, min, sec;
         enum pump_t pumps;
         uint8_t duration;
+        char *ptr;
 
         if (!isdigit(text[9])
         ||  text[10] != ' '
@@ -137,17 +138,21 @@ static void handle_sms(struct sim800l_sms_t *sms)
             return;
 
         duration = (text[20] - '0');
-        if (isdigit(text[21]))
-            duration = (duration * 10) + (text[21] - '0');
+        ptr = &text[21];
+        if (isdigit(*ptr))
+            duration = (duration * 10) + (*ptr++ - '0');
 
-        if (text[22] == '1')
+        if (*ptr++ != ' ')
+            return;
+
+        if (*ptr == '1')
             pumps = PUMP_1;
-        else if (text[22] == '2')
+        else if (*ptr == '2')
             pumps = PUMP_2;
         else if (text_length >= 25
-              && text[22] == 'A'
-              && text[23] == 'L'
-              && text[24] == 'L')
+              && ptr[0] == 'A'
+              && ptr[1] == 'L'
+              && ptr[2] == 'L')
             pumps = PUMP_ALL;
         else
             return;
